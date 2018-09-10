@@ -1,0 +1,33 @@
+{
+    "language": "Solidity",
+    "sources": {
+        "AssetContractLookup.sol": {
+            "urls": [
+                "file://./contracts/AssetContractLookup.sol"
+            ]
+        },
+        "AssetConsumingRegistryDB.sol": {
+            "urls": [
+                "file://./contracts/Asset/AssetConsumingRegistryDB.sol"
+            ]
+        },
+        "AssetConsumingRegistryLogic.sol": {
+            "urls": [
+                "file://./contracts/Asset/AssetConsumingRegistryLogic.sol"
+            ]
+        }
+    },
+    "settings": {
+        "remappings": [
+            ":ew-user-registry-contracts/=./solidity_modules/ew-user-registry-contracts/"
+        ],
+        "outputSelection": {
+            "*": {
+                "*": [
+                    "abi",
+                    "evm.bytecode.object"
+                ]
+            }
+        }
+    }
+}
