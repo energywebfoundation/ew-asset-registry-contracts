@@ -15,11 +15,17 @@
             "urls": [
                 "file://./contracts/Asset/AssetConsumingRegistryLogic.sol"
             ]
+        },
+        "AssetDbInterface.sol": {
+            "urls": [
+                "file://./contracts/Interfaces/AssetDbInterface.sol"
+            ]
         }
     },
     "settings": {
         "remappings": [
-            ":ew-user-registry-contracts/=./solidity_modules/ew-user-registry-contracts/"
+            ":ew-user-registry-contracts/=./solidity_modules/ew-user-registry-contracts/contracts/",
+            ":ew-utils-general-contracts/=./solidity_modules/ew-utils-general-contracts/contracts/"
         ],
         "outputSelection": {
             "*": {

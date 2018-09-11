@@ -16,8 +16,8 @@
 
 pragma solidity ^0.4.24;
 
-import "ew-user-registry-contracts/contracts/Users/RoleManagement.sol";
-import "ew-user-registry-contracts/contracts/Interfaces/Updatable.sol";
+import "ew-user-registry-contracts/Users/RoleManagement.sol";
+import "ew-utils-general-contracts/Interfaces/Updatable.sol";
 import "../../contracts/Interfaces/AssetDbInterface.sol";
 
 /// @title Contract for storing the current logic-contracts-addresses for the certificate of origin

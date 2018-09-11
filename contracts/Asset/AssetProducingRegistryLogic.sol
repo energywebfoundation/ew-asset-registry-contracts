@@ -22,7 +22,7 @@ import "../../contracts/AssetContractLookup.sol";
 //import "../Trading/CertificateLogic.sol";
 //import "../Trading/EnergyCertificateBundleLogic.sol";
 import "../../contracts/Asset/AssetLogic.sol";
-import "ew-user-registry-contracts/contracts/Msc/Owned.sol";
+import "ew-utils-general-contracts/Msc/Owned.sol";
 
 
 /// @title The logic contract for the asset registration

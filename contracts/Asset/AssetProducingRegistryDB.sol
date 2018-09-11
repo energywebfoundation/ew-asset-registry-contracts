@@ -18,7 +18,7 @@
 pragma solidity ^0.4.24;
 pragma experimental ABIEncoderV2;
 
-import "ew-user-registry-contracts/contracts/Msc/Owned.sol";
+import "ew-utils-general-contracts/Msc/Owned.sol";
 import "../../contracts/Interfaces/AssetDbInterface.sol";
 
 /// @title The Database contract for the Asset Registration

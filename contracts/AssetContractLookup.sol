@@ -16,11 +16,12 @@
 
 pragma solidity ^0.4.24;
 
-import "ew-user-registry-contracts/contracts/Msc/Owned.sol";
-import "ew-user-registry-contracts/contracts/Interfaces/Updatable.sol";
+import "ew-utils-general-contracts/Msc/Owned.sol";
+import "ew-utils-general-contracts/Interfaces/Updatable.sol";
+import "../contracts/Interfaces/AssetContractLookupInterface.sol";
 
 /// @title Contract for storing the current logic-contracts-addresses for the certificate of origin
-contract AssetContractLookup is Owned {
+contract AssetContractLookup is Owned, AssetContractLookupInterface {
 
     Updatable public assetConsumingRegistry;
     Updatable public assetProducingRegistry;
@@ -67,6 +68,18 @@ contract AssetContractLookup is Owned {
             assetConsumingRegistry.update(_assetConsumingRegistry);
             assetConsumingRegistry = _assetConsumingRegistry;
         }        
-        
+    }
+
+    function assetConsumingRegistry() external view returns (address){
+        return assetConsumingRegistry;
+    }
+
+    function assetProducingRegistry() external view returns (address){
+        return assetProducingRegistry;
+
+    }
+    function userRegistry() external view returns (address){
+        return userRegistry;
+
     }
 }
