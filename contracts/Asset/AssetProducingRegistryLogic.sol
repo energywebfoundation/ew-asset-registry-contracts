@@ -23,12 +23,13 @@ import "../../contracts/AssetContractLookup.sol";
 //import "../Trading/EnergyCertificateBundleLogic.sol";
 import "../../contracts/Asset/AssetLogic.sol";
 import "ew-utils-general-contracts/Msc/Owned.sol";
+import "../../contracts/Interfaces/AssetProducingInterface.sol";
 
 
 /// @title The logic contract for the asset registration
 /// @notice This contract provides the logic that determines how the data is stored
 /// @dev Needs a valid AssetProducingRegistryDB contract to function correctly
-contract AssetProducingRegistryLogic is AssetLogic {
+contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
 
     event LogNewMeterRead(
         uint indexed _assetId, 
@@ -44,7 +45,7 @@ contract AssetProducingRegistryLogic is AssetLogic {
     UserContractLookupInterface public userContractLookup;
     
     /// @notice Constructor
-    constructor(UserContractLookupInterface _userContractLookup) RoleManagement(_userContractLookup) public {
+    constructor(UserContractLookupInterface _userContractLookup, AssetContractLookupInterface _assetContractLookup) RoleManagement(_userContractLookup,_assetContractLookup) public {
         userContractLookup = _userContractLookup;
     }
 
@@ -161,7 +162,6 @@ contract AssetProducingRegistryLogic is AssetLogic {
         string _lastSmartMeterReadFileHash, 
         uint _CO2OffsetMeterRead, 
         bool _CO2OffsetServiceDown
-        
     ) 
         external
         isInitialized
@@ -182,8 +182,7 @@ contract AssetProducingRegistryLogic is AssetLogic {
         bool _smartMeterDown, 
         string _lastSmartMeterReadFileHash, 
         uint _CO2OffsetMeterRead, 
-        bool _CO2OffsetServiceDown
-        
+        bool _CO2OffsetServiceDown  
     ) 
         external
         isInitialized

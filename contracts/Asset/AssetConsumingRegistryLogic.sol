@@ -20,18 +20,19 @@ pragma experimental ABIEncoderV2;
 import "../../contracts/Asset/AssetConsumingRegistryDB.sol";
 import "../../contracts/AssetContractLookup.sol";
 import "../../contracts/Asset/AssetLogic.sol";
+import "../../contracts/Interfaces/AssetConsumingInterface.sol";
 
 /// @title The logic contract for the asset registration
 /// @notice This contract provides the logic that determines how the data is stored
-/// @dev Needs a valid AssetProducingRegistryDB contract to function correctly 
-contract AssetConsumingRegistryLogic is AssetLogic {
+/// @dev Needs a valid AssetConsumingRegistryDB contract to function correctly 
+contract AssetConsumingRegistryLogic is AssetLogic, AssetConsumingInterface {
 
     event LogNewMeterRead(uint indexed _assetId, uint _oldMeterRead, uint _newMeterRead, uint _certificatesUsedForWh, bool _smartMeterDown);
 
     UserContractLookupInterface public userContractLookup;
     
     /// @notice Constructor
-    constructor(UserContractLookupInterface _userContractLookup) RoleManagement(_userContractLookup) public {
+    constructor(UserContractLookupInterface _userContractLookup, AssetContractLookupInterface _assetContractLookup) RoleManagement(_userContractLookup,_assetContractLookup) public {
         userContractLookup = _userContractLookup;
     }
 
@@ -116,14 +117,5 @@ contract AssetConsumingRegistryLogic is AssetLogic {
         _matcher = asset.matcher;
     }
 
-    /// @notice function to get the amount of assets
-    /// @return amount of assets
-    function getAssetListLength()
-        external
-        view
-        returns (uint)
-    {
-        return AssetConsumingRegistryDB(db).getAssetListLength();
-    }
     
 }

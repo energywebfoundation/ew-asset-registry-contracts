@@ -18,6 +18,7 @@ pragma solidity ^0.4.24;
 
 import "ew-utils-general-contracts/Msc/Owned.sol";
 import "ew-utils-general-contracts/Interfaces/Updatable.sol";
+import "ew-user-registry-contracts/Interfaces/UserContractLookupInterface.sol";
 import "../contracts/Interfaces/AssetContractLookupInterface.sol";
 
 /// @title Contract for storing the current logic-contracts-addresses for the certificate of origin
@@ -25,7 +26,7 @@ contract AssetContractLookup is Owned, AssetContractLookupInterface {
 
     Updatable public assetConsumingRegistry;
     Updatable public assetProducingRegistry;
-    address public userRegistry;
+    UserContractLookupInterface public userRegistry;
 
 
     /// @notice The constructor 
@@ -34,18 +35,30 @@ contract AssetContractLookup is Owned, AssetContractLookupInterface {
     /// @notice function to initialize the contracts, setting the needed contract-addresses
     /// @param _userRegistry user-registry logic contract address
     /// @param _assetProducingRegistry asset-registry logic contract address
-    function init(address _userRegistry, Updatable _assetProducingRegistry, Updatable _assetConsumingRegistry) 
+    function init(
+        UserContractLookupInterface _userRegistry, 
+        Updatable _assetProducingRegistry, 
+        Updatable _assetConsumingRegistry, 
+        address _assetProducingDB, 
+        address _assetConsumingDB
+    ) 
         external
         onlyOwner
     {
         require(    
-            _userRegistry != 0 && _assetProducingRegistry != address(0) && _assetConsumingRegistry != address(0)
-            && userRegistry == 0 && assetProducingRegistry == address(0) && assetConsumingRegistry == address(0),
+            _userRegistry != address(0) && _assetProducingRegistry != address(0) && _assetConsumingRegistry != address(0)
+            && userRegistry == address(0) && assetProducingRegistry == address(0) && assetConsumingRegistry == address(0),
             "alreadny initialized"
         );
+        require(_assetProducingDB != 0, "assetProducingDB cannot be 0");
+        require(_assetConsumingDB != 0, "assetConsumingDB cannot be 0");
+
         userRegistry = _userRegistry;
         assetProducingRegistry = _assetProducingRegistry;
         assetConsumingRegistry = _assetConsumingRegistry;
+
+        assetProducingRegistry.init(_assetProducingDB, msg.sender);
+        assetConsumingRegistry.init(_assetConsumingDB, msg.sender);
     }
 
     /// @notice function to update one or more logic-contracts
@@ -56,9 +69,7 @@ contract AssetContractLookup is Owned, AssetContractLookupInterface {
     )
         external
         onlyOwner 
-        
     {
-
         if (_assetProducingRegistry != address(0)) {
             assetProducingRegistry.update(_assetProducingRegistry);
             assetProducingRegistry = _assetProducingRegistry;
@@ -80,6 +91,5 @@ contract AssetContractLookup is Owned, AssetContractLookupInterface {
     }
     function userRegistry() external view returns (address){
         return userRegistry;
-
     }
 }

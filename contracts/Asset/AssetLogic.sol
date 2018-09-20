@@ -19,9 +19,11 @@ pragma solidity ^0.4.24;
 import "ew-user-registry-contracts/Users/RoleManagement.sol";
 import "ew-utils-general-contracts/Interfaces/Updatable.sol";
 import "../../contracts/Interfaces/AssetDbInterface.sol";
+import "../../contracts/Interfaces/AssetGeneralInterface.sol";
+
 
 /// @title Contract for storing the current logic-contracts-addresses for the certificate of origin
-contract AssetLogic is RoleManagement, Updatable {
+contract AssetLogic is RoleManagement, Updatable, AssetGeneralInterface {
 
     event LogAssetCreated(address _sender, uint indexed _assetId);
     event LogAssetFullyInitialized(uint indexed _assetId);
@@ -40,9 +42,9 @@ contract AssetLogic is RoleManagement, Updatable {
     */
     /// @notice function toinizialize the database, can only be called once
     /// @param _dbAddress address of the database contract
-    function init(address _dbAddress) 
+    function init(address _dbAddress, address _admin) 
         external
-        onlyRole(RoleManagement.Role.TopAdmin)
+        onlyOwner
     {
         require(address(db) == 0x0);
         db = AssetDbInterface(_dbAddress);
