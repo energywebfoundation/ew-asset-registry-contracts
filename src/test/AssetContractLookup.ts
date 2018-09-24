@@ -18,11 +18,13 @@ import { assert } from 'chai';
 import * as fs from 'fs';
 import 'mocha';
 import { Web3Type } from '../types/web3';
-import { migrateUserRegistryContracts, UserLogic } from 'ew-user-registry-contracts';
+import { migrateUserRegistryContracts, UserLogic, UserContractLookup } from 'ew-user-registry-contracts';
 import { migrateAssetRegistryContracts } from '../utils/migrateContracts';
 import { AssetContractLookup } from '../wrappedContracts/AssetContractLookup';
 import { AssetProducingRegistryLogic } from '../wrappedContracts/AssetProducingRegistryLogic';
 import { AssetConsumingRegistryLogic } from '../wrappedContracts/AssetConsumingRegistryLogic';
+import { AssetProducingRegistryDB } from '../wrappedContracts/AssetProducingRegistryDB';
+import { AssetConsumingRegistryDB } from '../wrappedContracts/AssetConsumingRegistryDB';
 
 describe('AssetContractLookup', () => {
 
@@ -36,19 +38,23 @@ describe('AssetContractLookup', () => {
 
     const accountDeployment = web3.eth.accounts.privateKeyToAccount(privateKeyDeployment).address;
 
-    //  let userContractLookup: UserContractLookup;
+    let userContractLookup: UserContractLookup;
     let assetContractLookup: AssetContractLookup;
     let assetProducingLogic: AssetProducingRegistryLogic;
     let assetConsumingLogic: AssetConsumingRegistryLogic;
+    let assetProducingDB: AssetProducingRegistryDB;
+    let assetConsumingDB: AssetConsumingRegistryDB;
 
     it('should deploy the contracts', async () => {
 
         const deployedContracts = await migrateAssetRegistryContracts(web3);
 
-        //  userContractLookup = new UserContractLookup((web3 as any), deployedContracts['./solidity_modules/ew-user-registry-contracts/dist/UserContractLookup.json']);
-        assetContractLookup = new AssetContractLookup((web3 as any), deployedContracts['./solidity_modules/ew-asset-registry-contracts/dist/AssetContractLookup.json']);
-        assetProducingLogic = new AssetProducingRegistryLogic((web3 as any), deployedContracts['./solidity_modules/ew-asset-registry-contracts/dist/AssetProducingRegistryLogic.json']);
-        assetConsumingLogic = new AssetConsumingRegistryLogic((web3 as any), deployedContracts['./solidity_modules/ew-asset-registry-contracts/dist/AssetConsumingRegistryLogic.json']);
+        userContractLookup = new UserContractLookup((web3 as any), deployedContracts[process.cwd() + '/node_modules/ew-user-registry-contracts/dist/UserContractLookup.json']);
+        assetContractLookup = new AssetContractLookup((web3 as any));
+        assetProducingLogic = new AssetProducingRegistryLogic((web3 as any));
+        assetConsumingLogic = new AssetConsumingRegistryLogic((web3 as any));
+        assetProducingDB = new AssetProducingRegistryDB((web3 as any));
+        assetConsumingDB = new AssetConsumingRegistryDB((web3 as any));
 
         Object.keys(deployedContracts).forEach(async (key) => {
 
@@ -61,6 +67,95 @@ describe('AssetContractLookup', () => {
             assert.equal(deployedBytecode, tempBytecode);
 
         });
+    });
+
+    it('should have the right owner', async () => {
+
+        assert.equal(await userContractLookup.owner(), accountDeployment);
+        assert.equal(await assetContractLookup.owner(), accountDeployment);
+
+    });
+
+    it('should have the right registries', async () => {
+
+        assert.equal(await assetContractLookup.assetConsumingRegistry(), assetConsumingLogic.web3Contract._address);
+        assert.equal(await assetContractLookup.assetProducingRegistry(), assetProducingLogic.web3Contract._address);
+        assert.equal(await assetContractLookup.userRegistry(), userContractLookup.web3Contract._address);
+
+    });
+
+    it('should throw an error when calling init again', async () => {
+
+        let failed = false;
+
+        try {
+            await assetContractLookup.init('0x1000000000000000000000000000000000000005',
+                                           '0x1000000000000000000000000000000000000005',
+                                           '0x1000000000000000000000000000000000000005',
+                                           '0x1000000000000000000000000000000000000005',
+                                           '0x1000000000000000000000000000000000000005',
+                                           { privateKey: privateKeyDeployment },
+            );
+        }
+        catch (ex) {
+            failed = true;
+        }
+
+        assert.isTrue(failed);
+    });
+
+    it('should throw an error when calling update as non Owner', async () => {
+
+        let failed = false;
+
+        try {
+            await assetContractLookup.update('0x1000000000000000000000000000000000000005',
+                                             '0x1000000000000000000000000000000000000005',
+                                             { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
+        }
+        catch (ex) {
+            failed = true;
+        }
+
+        assert.isTrue(failed);
+    });
+
+    it('should be able to update as owner', async () => {
+
+        await assetContractLookup.update('0x1000000000000000000000000000000000000005',
+                                         '0x1000000000000000000000000000000000000006',
+                                         { privateKey: privateKeyDeployment });
+
+        assert.equal(await assetContractLookup.assetProducingRegistry(), '0x1000000000000000000000000000000000000005');
+        assert.equal(await assetProducingDB.owner(), '0x1000000000000000000000000000000000000005');
+
+        assert.equal(await assetContractLookup.assetConsumingRegistry(), '0x1000000000000000000000000000000000000006');
+        assert.equal(await assetConsumingDB.owner(), '0x1000000000000000000000000000000000000006');
+    });
+
+    it('should throw when trying to change owner as non-owner', async () => {
+
+        let failed = false;
+
+        try {
+            await assetContractLookup.changeOwner('0x1000000000000000000000000000000000000005',
+                                                  { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
+        }
+        catch (ex) {
+            failed = true;
+        }
+
+        assert.isTrue(failed);
+
+    });
+
+    it('should be able to change owner ', async () => {
+
+        await assetContractLookup.changeOwner('0x1000000000000000000000000000000000000005',
+                                              { privateKey: privateKeyDeployment });
+
+        assert.equal(await assetContractLookup.owner(), '0x1000000000000000000000000000000000000005');
+
     });
 
 });
