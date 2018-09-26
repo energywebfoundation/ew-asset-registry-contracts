@@ -75,7 +75,8 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
             _smartMeter, 
             _owner, 
             _maxOwnerChanges, 
-            _active, _matcher, 
+            _active, 
+            _matcher, 
             _propertiesDocumentHash, 
             _url
         ); 
@@ -222,46 +223,6 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
         _maxOwnerChanges = asset.maxOwnerChanges;
         _propertiesDocumentHash = asset.propertiesDocumentHash;
         _url = asset.url;
-    }
-
-    /// @notice Gets the general information of an asset
-    /// @param _assetId the id belonging to an entry in the asset registry
-    /// @return the general information of an asset
-    function getAssetGeneral(uint _assetId) 
-        external
-        view
-        returns(
-            address _smartMeter,
-            address _owner,
-            uint _lastSmartMeterReadWh,
-            bool _active,
-            string _lastSmartMeterReadFileHash
-        )
-    {
-        AssetProducingRegistryDB.Asset memory asset = AssetProducingRegistryDB((db)).getAsset(_assetId);
-        _smartMeter = asset.smartMeter;
-        _owner = asset.owner;
-        _lastSmartMeterReadWh = asset.lastSmartMeterReadWh;
-        _active = asset.active;
-        _lastSmartMeterReadFileHash = asset.lastSmartMeterReadFileHash;
-    }
-
-    /// @notice get the producing properties of an asset
-    /// @param _assetId the id belonging to an entry in the asset registry
-    /// @return the producing properties
-    function getAssetProducingProperties(uint _assetId)
-        external 
-        view 
-        returns(
-            uint _certificatesCreatedForWh,
-            uint _lastSmartMeterCO2OffsetRead,
-            uint _maxOwnerChanges
-        )
-    {
-        AssetProducingRegistryDB.Asset memory asset = AssetProducingRegistryDB((db)).getAsset(_assetId);
-        _certificatesCreatedForWh = asset.certificatesCreatedForWh;
-        _lastSmartMeterCO2OffsetRead = asset.lastSmartMeterCO2OffsetRead;
-        _maxOwnerChanges = asset.maxOwnerChanges;
     }
 
     /// @notice Gets the full asset as struct

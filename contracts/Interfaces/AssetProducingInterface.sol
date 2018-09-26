@@ -25,8 +25,6 @@ interface AssetProducingInterface {
     function saveSmartMeterRead(uint _assetId, uint _newMeterRead, bool _smartMeterDown, string _lastSmartMeterReadFileHash, uint _CO2OffsetMeterRead,  bool _CO2OffsetServiceDown) external;
     function saveSmartMeterReadBundle(uint _assetId, uint _newMeterRead, bool _smartMeterDown, string _lastSmartMeterReadFileHash, uint _CO2OffsetMeterRead, bool _CO2OffsetServiceDown) external;
     function getAsset(uint _assetId) external view returns (uint _certificatesUsedForWh, address _smartMeter, address _owner, uint _lastSmartMeterReadWh, bool _active, string _lastSmartMeterReadFileHash, address[] _matcher, uint _certificatesCreatedForWh, uint _lastSmartMeterCO2OffsetRead, uint _maxOwnerChanges, string _propertiesDocumentHash, string _url);
-    function getAssetGeneral(uint _assetId)  external view returns(address _smartMeter, address _owner, uint _lastSmartMeterReadWh, bool _active, string _lastSmartMeterReadFileHash);
-    function getAssetProducingProperties(uint _assetId) external view returns(uint _certificatesCreatedForWh, uint _lastSmartMeterCO2OffsetRead, uint _maxOwnerChanges);
     function getFullAsset(uint _assetId) external view returns (AssetProducingRegistryDB.Asset);
     function getLastSmartMeterReadFileHash(uint _assetId) external view returns (string); 
 }
