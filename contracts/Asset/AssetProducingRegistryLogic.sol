@@ -67,7 +67,7 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
         string _url
     ) 
         external
-        //isInitialized
+        isInitialized
         userHasRole(RoleManagement.Role.AssetManager, _owner)
         onlyRole(RoleManagement.Role.AssetAdmin)
     {  

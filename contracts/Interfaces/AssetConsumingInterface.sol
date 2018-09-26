@@ -23,6 +23,6 @@ import "../../contracts/Asset/AssetConsumingRegistryDB.sol";
 interface AssetConsumingInterface {
     function createAsset(address _smartMeter, address _owner, bool _active, address _matcher, string _propertiesDocumentHash, string _url) external; 
     function saveSmartMeterRead(uint _assetId, uint _newMeterRead, string _lastSmartMeterReadFileHash, bool _smartMeterDown) external;
-    function setConsumptionForPeriode(uint _assetId, uint _consumed) external;
+//    function setConsumptionForPeriode(uint _assetId, uint _consumed) external;
     function getAsset(uint _assetId) external view returns (address _smartMeter, address _owner, uint _lastSmartMeterReadWh, uint _certificatesUsedForWh, bool _active, string _lastSmartMeterReadFileHash, string _propertiesDocumentHash, string _url, address[] _matcher);
 }

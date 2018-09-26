@@ -72,20 +72,26 @@ contract AssetConsumingRegistryLogic is AssetLogic, AssetConsumingInterface {
         AssetConsumingRegistryDB.Asset memory asset = AssetConsumingRegistryDB((db)).getAsset(_assetId);
         require(asset.smartMeter == msg.sender,"saveSmartMeterRead: wrong sender");
         require(asset.active,"saveSmartMeterRead: asset not active");
+
+        uint oldMeterRead = asset.lastSmartMeterReadWh;
+        require(_newMeterRead>oldMeterRead,"saveSmartMeterRead: meterread too low");
+
         emit LogNewMeterRead(_assetId,  asset.lastSmartMeterReadWh, _newMeterRead, asset.certificatesUsedForWh, _smartMeterDown);
         db.setLastSmartMeterReadFileHash(_assetId, _lastSmartMeterReadFileHash);
         AssetConsumingRegistryDB((db)).setLastSmartMeterReadWh(_assetId, _newMeterRead);
     }
 
+/*
     /// @notice sets the consumption for a period (in Wh)
     /// @param _assetId assetId
     /// @param _consumed the amount of energy consumed
-    function setConsumptionForPeriode(uint _assetId, uint _consumed)
+    function setCertificatesUsedForWh(uint _assetId, uint _consumed)
         external
      //   onlyAccount(address(cooContract.marketRegistry()))
     {
         AssetConsumingRegistryDB(db).setCertificatesUsedForWh(_assetId, _consumed);
     }
+*/
 
     /// @notice Gets an asset
     /// @param _assetId The id belonging to an entry in the asset registry

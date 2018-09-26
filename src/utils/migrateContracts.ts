@@ -21,11 +21,9 @@ export async function migrateAssetRegistryContracts(web3: Web3Type, userContract
 
             const userLogic: UserLogic = new UserLogic((web3 as any), userContracts[process.cwd() + '/node_modules/ew-user-registry-contracts/dist/contracts/UserLogic.json']);
 
-            // console.log(userContracts);
-
             await userLogic.setUser(accountDeployment, 'admin', { privateKey: privateKeyDeployment });
 
-            await userLogic.setRoles(accountDeployment, 2, { privateKey: privateKeyDeployment });
+            await userLogic.setRoles(accountDeployment, 3, { privateKey: privateKeyDeployment });
 
             userContractLookup = userContracts[process.cwd() + '/node_modules/ew-user-registry-contracts/dist/contracts/UserContractLookup.json'];
 
