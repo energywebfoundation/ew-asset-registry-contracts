@@ -75,5 +75,5 @@ push-to-registry:
     - build-pkg
   script:
     - sh /prepare.sh
-    - npm --no-git-tag-version -f version $CI_COMMIT_TAG
+    - npm --no-git-tag-version -f version $CI_COMMIT_TAG --allow-same-version
     - npm publish
