@@ -18,7 +18,7 @@ import { assert } from 'chai';
 import * as fs from 'fs';
 import 'mocha';
 import { Web3Type } from '../types/web3';
-import { UserContractLookup, UserLogic } from 'ew-user-registry-contracts';
+import { UserContractLookup, UserLogic, migrateUserRegistryContracts } from 'ew-user-registry-contracts';
 import { migrateAssetRegistryContracts } from '../utils/migrateContracts';
 import { AssetContractLookup } from '../wrappedContracts/AssetContractLookup';
 import { AssetProducingRegistryLogic } from '../wrappedContracts/AssetProducingRegistryLogic';
@@ -56,10 +56,20 @@ describe('AssetConsumingLogic', () => {
 
     it('should deploy the contracts', async () => {
 
-        const deployedContracts = await migrateAssetRegistryContracts(web3);
+        const userContracts = await migrateUserRegistryContracts(web3);
+
+        const userLogic: UserLogic = new UserLogic((web3 as any), userContracts[process.cwd() + '/node_modules/ew-user-registry-contracts/dist/contracts/UserLogic.json']);
+
+        await userLogic.setUser(accountDeployment, 'admin', { privateKey: privateKeyDeployment });
+
+        await userLogic.setRoles(accountDeployment, 3, { privateKey: privateKeyDeployment });
+
+        const userContractLookupAddr = userContracts[process.cwd() + '/node_modules/ew-user-registry-contracts/dist/contracts/UserContractLookup.json'];
+
+        const deployedContracts = await migrateAssetRegistryContracts(web3, userContractLookupAddr);
 
         userContractLookup = new UserContractLookup((web3 as any),
-            deployedContracts[process.cwd() + '/node_modules/ew-user-registry-contracts/dist/UserContractLookup.json']);
+                                                    userContractLookupAddr);
         assetContractLookup = new AssetContractLookup((web3 as any));
         assetProducingLogic = new AssetProducingRegistryLogic((web3 as any));
         assetConsumingLogic = new AssetConsumingRegistryLogic((web3 as any));

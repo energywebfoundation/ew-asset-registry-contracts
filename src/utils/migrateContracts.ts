@@ -5,7 +5,7 @@ import { migrateUserRegistryContracts, UserLogic } from 'ew-user-registry-contra
 import { AssetContractLookup } from '../wrappedContracts/AssetContractLookup';
 import * as path from 'path';
 
-export async function migrateAssetRegistryContracts(web3: Web3Type, userContractLookup?: string): Promise<JSON> {
+export async function migrateAssetRegistryContracts(web3: Web3Type, userContractLookup: string): Promise<JSON> {
     return new Promise<any>(async (resolve, reject) => {
 
         const configFile = JSON.parse(fs.readFileSync(process.cwd() + '/connection-config.json', 'utf8'));
@@ -15,21 +15,6 @@ export async function migrateAssetRegistryContracts(web3: Web3Type, userContract
         const privateKeyDeployment = configFile.develop.deployKey.startsWith('0x') ?
             configFile.develop.deployKey : '0x' + configFile.develop.deployKey;
         const accountDeployment = web3.eth.accounts.privateKeyToAccount(privateKeyDeployment).address;
-
-        if (!userContractLookup) {
-            const userContracts = await migrateUserRegistryContracts(web3);
-
-            const userLogic: UserLogic = new UserLogic((web3 as any), userContracts[process.cwd() + '/node_modules/ew-user-registry-contracts/dist/contracts/UserLogic.json']);
-
-            await userLogic.setUser(accountDeployment, 'admin', { privateKey: privateKeyDeployment });
-
-            await userLogic.setRoles(accountDeployment, 3, { privateKey: privateKeyDeployment });
-
-            userContractLookup = userContracts[process.cwd() + '/node_modules/ew-user-registry-contracts/dist/contracts/UserContractLookup.json'];
-
-            sloffle.deployedContracts[process.cwd() + '/node_modules/ew-user-registry-contracts/dist/contracts/UserContractLookup.json'] = userContractLookup;
-
-        }
 
         const assetContractLookupWeb3 = await sloffle.deploy(
             path.resolve(__dirname, '../../contracts/AssetContractLookup.json'),
@@ -61,9 +46,15 @@ export async function migrateAssetRegistryContracts(web3: Web3Type, userContract
             { privateKey: privateKeyDeployment },
         );
 
-        const assetContractLookup: AssetContractLookup = new AssetContractLookup((web3 as any), assetContractLookupWeb3._address);
+        const assetContractLookup: AssetContractLookup =
+            new AssetContractLookup((web3 as any), assetContractLookupWeb3._address);
 
-        await assetContractLookup.init(userContractLookup, assetProducingLogicWeb3._address, assetConsumingLogicWeb3._address, assetProducingDBWeb3._address, assetConsumingDBWeb3._address, { privateKey: privateKeyDeployment });
+        await assetContractLookup.init(
+            userContractLookup,
+            assetProducingLogicWeb3._address,
+            assetConsumingLogicWeb3._address,
+            assetProducingDBWeb3._address,
+            assetConsumingDBWeb3._address, { privateKey: privateKeyDeployment });
 
         resolve(sloffle.deployedContracts);
     });
