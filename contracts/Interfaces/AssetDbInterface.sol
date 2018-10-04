@@ -27,4 +27,8 @@ interface AssetDbInterface {
     function setOwner(uint _assetId, address _owner) external;
     function setSmartMeter(uint _assetId, address _smartMeter) external;
     function getAssetListLength() external view returns (uint);
+    function setMarketLookupContract(uint _assetId, address _marketContractLookup) external;
+    function getMarketLookupContract(uint _assetId) external view returns (address);
+    function getAssetOwner(uint _assetId) external view returns (address);
+
 }

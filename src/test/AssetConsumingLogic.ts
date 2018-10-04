@@ -46,7 +46,8 @@ describe('AssetConsumingLogic', () => {
     let assetProducingDB: AssetProducingRegistryDB;
     let assetConsumingDB: AssetConsumingRegistryDB;
 
-    const assetOwnerAddress = '0x7110d0f07be70fc2a6c84fe66bf128593b2102fb';
+    const assetOwnerPK = '0xfaab95e72c3ac39f7c060125d9eca3558758bb248d1a4cdc9c1b7fd3f91a4485';
+    const assetOwnerAddress = web3.eth.accounts.privateKeyToAccount(assetOwnerPK).address;
 
     const assetSmartmeterPK = '0x2dc5120c26df339dbd9861a0f39a79d87e0638d30fdedc938861beac77bbd3f5';
     const assetSmartmeter = web3.eth.accounts.privateKeyToAccount(assetSmartmeterPK).address;
@@ -284,6 +285,63 @@ describe('AssetConsumingLogic', () => {
     });
 
     it.skip('should call setConsumptionForPeriode', async () => {
+
+    });
+
+    it('should return 0x0 when an asset does not have a marketLogicContractLookup-address set', async () => {
+
+        assert.equal(await assetConsumingLogic.getMarketLookupContract(0), '0x0000000000000000000000000000000000000000');
+
+    });
+
+    it('should fail trying to set marketAddress as admin', async () => {
+
+        let failed = false;
+
+        try {
+            await assetConsumingLogic.setMarketLookupContract(0, '0x1000000000000000000000000000000000000005',
+                                                              { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
+        } catch (ex) {
+            failed = true;
+        }
+
+        assert.isTrue(failed);
+    });
+
+    it('should fail trying to set marketAddress as random user', async () => {
+
+        let failed = false;
+
+        try {
+            await assetConsumingLogic.setMarketLookupContract(0, '0x1000000000000000000000000000000000000005',
+                                                              { privateKey: matcherPK });
+        } catch (ex) {
+            failed = true;
+        }
+
+        assert.isTrue(failed);
+    });
+
+    it('should fail trying to set marketAddress as admin', async () => {
+
+        let failed = false;
+
+        try {
+            await assetConsumingLogic.setMarketLookupContract(0, '0x1000000000000000000000000000000000000005',
+                                                              { privateKey: privateKeyDeployment });
+        } catch (ex) {
+            failed = true;
+        }
+
+        assert.isTrue(failed);
+    });
+
+    it('should set marketAddress', async () => {
+
+        await assetConsumingLogic.setMarketLookupContract(0, '0x1000000000000000000000000000000000000005',
+                                                          { privateKey: assetOwnerPK });
+
+        assert.equal(await assetConsumingLogic.getMarketLookupContract(0), '0x1000000000000000000000000000000000000005');
 
     });
 

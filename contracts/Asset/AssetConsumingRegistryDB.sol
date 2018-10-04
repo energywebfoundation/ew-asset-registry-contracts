@@ -35,6 +35,7 @@ contract AssetConsumingRegistryDB is Owned, AssetDbInterface {
         address[] matcher;
         string propertiesDocumentHash;
         string url;
+        address marketLookupContract;
     }
 
     /// @notice An array containing all registerd assets
@@ -76,7 +77,8 @@ contract AssetConsumingRegistryDB is Owned, AssetDbInterface {
             lastSmartMeterReadFileHash:"",
             matcher: matcherarray,
             propertiesDocumentHash: _propertiesDocumentHash,
-            url: _url
+            url: _url,
+            marketLookupContract: 0x0
         });
 
         assets.push(a);
@@ -122,6 +124,10 @@ contract AssetConsumingRegistryDB is Owned, AssetDbInterface {
         external
     {
         assets[_assetId].lastSmartMeterReadWh = _lastSmartMeterReadWh;
+    }
+
+    function setMarketLookupContract(uint _assetId, address _marketContractLookup) external onlyOwner {
+        assets[_assetId].marketLookupContract = _marketContractLookup;
     }
 
     /// @notice Sets the owner of an entry in the asset registry
@@ -187,5 +193,13 @@ contract AssetConsumingRegistryDB is Owned, AssetDbInterface {
         return assets.length;
     }
 
+    function getMarketLookupContract(uint _assetId) external onlyOwner view returns (address){
+
+        return assets[_assetId].marketLookupContract;
+    }
+
+    function getAssetOwner(uint _assetId) external onlyOwner view returns (address){
+        return assets[_assetId].owner;
+    }
     
 }

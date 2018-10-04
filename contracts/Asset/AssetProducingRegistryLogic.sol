@@ -19,6 +19,9 @@ pragma experimental ABIEncoderV2;
 
 import "../../contracts/Asset/AssetProducingRegistryDB.sol";
 import "../../contracts/AssetContractLookup.sol";
+import "ew-origin-contracts/Interfaces/CertificateInterface.sol";
+import "ew-origin-contracts/Interfaces/EnergyCertificateBundleInterface.sol";
+
 //import "../Trading/CertificateLogic.sol";
 //import "../Trading/EnergyCertificateBundleLogic.sol";
 import "../../contracts/Asset/AssetLogic.sol";
@@ -119,24 +122,25 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
         AssetProducingRegistryDB(db).setCertificatesCreatedForWh(_assetId, _newMeterRead-oldMeterRead);
 
         /// TODO: re-enable certificates
-        /*
-        if (_bundle) {
-            EnergyCertificateBundleLogic(address(cooContract.bundleRegistry())).createBundle(
-                _assetId, 
-                _newMeterRead - oldMeterRead, 
-                _CO2OffsetMeterRead - oldCO2,  
-                asset.matcher
-            ); 
-            
-        } else {
-            CertificateLogic(address(cooContract.certificateRegistry())).createCertificate(
-                _assetId, 
-                _newMeterRead - oldMeterRead, 
-                _CO2OffsetMeterRead - oldCO2,  
-                asset.matcher
-            ); 
+        if(asset.marketLookupContract != 0x0){
+            if (_bundle) {
+                EnergyCertificateBundleInterface(asset.marketLookupContract).createBundle(
+                    _assetId, 
+                    _newMeterRead - oldMeterRead, 
+                    _CO2OffsetMeterRead - oldCO2,  
+                    asset.matcher
+                ); 
+                
+            } else {
+                CertificateInterface(asset.marketLookupContract).createCertificate(
+                    _assetId, 
+                    _newMeterRead - oldMeterRead, 
+                    _CO2OffsetMeterRead - oldCO2,  
+                    asset.matcher
+                ); 
+            }
         }
-        */
+        
         emit LogNewMeterRead(
             _assetId, 
             oldMeterRead, 
@@ -207,8 +211,7 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
         uint _lastSmartMeterCO2OffsetRead,
         uint _maxOwnerChanges,
         string _propertiesDocumentHash,
-        string _url
-        )
+        string _url        )
     {
         AssetProducingRegistryDB.Asset memory asset = AssetProducingRegistryDB(db).getAsset(_assetId);
         _certificatesUsedForWh = asset.certificatesUsedForWh;
