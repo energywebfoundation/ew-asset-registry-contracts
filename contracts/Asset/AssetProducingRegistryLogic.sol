@@ -21,6 +21,7 @@ import "../../contracts/Asset/AssetProducingRegistryDB.sol";
 import "../../contracts/AssetContractLookup.sol";
 import "ew-origin-contracts/Interfaces/CertificateInterface.sol";
 import "ew-origin-contracts/Interfaces/EnergyCertificateBundleInterface.sol";
+import "ew-origin-contracts/Interfaces/OriginContractLookupInterface.sol";
 
 //import "../Trading/CertificateLogic.sol";
 //import "../Trading/EnergyCertificateBundleLogic.sol";
@@ -124,7 +125,7 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
         /// TODO: re-enable certificates
         if(asset.marketLookupContract != 0x0){
             if (_bundle) {
-                EnergyCertificateBundleInterface(asset.marketLookupContract.originLogicRegistry()).createBundle(
+                EnergyCertificateBundleInterface(OriginContractLookupInterface(asset.marketLookupContract).originLogicRegistry()).createBundle(
                     _assetId, 
                     _newMeterRead - oldMeterRead, 
                     _CO2OffsetMeterRead - oldCO2,  
@@ -132,7 +133,7 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
                 ); 
                 
             } else {
-                CertificateInterface(asset.marketLookupContract.originLogicRegistry()).createCertificate(
+                CertificateInterface(OriginContractLookupInterface(asset.marketLookupContract).originLogicRegistry()).createCertificate(
                     _assetId, 
                     _newMeterRead - oldMeterRead, 
                     _CO2OffsetMeterRead - oldCO2,  
