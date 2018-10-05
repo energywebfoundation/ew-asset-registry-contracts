@@ -124,7 +124,7 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
         /// TODO: re-enable certificates
         if(asset.marketLookupContract != 0x0){
             if (_bundle) {
-                EnergyCertificateBundleInterface(asset.marketLookupContract).createBundle(
+                EnergyCertificateBundleInterface(asset.marketLookupContract.originLogicRegistry()).createBundle(
                     _assetId, 
                     _newMeterRead - oldMeterRead, 
                     _CO2OffsetMeterRead - oldCO2,  
@@ -132,7 +132,7 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
                 ); 
                 
             } else {
-                CertificateInterface(asset.marketLookupContract).createCertificate(
+                CertificateInterface(asset.marketLookupContract.originLogicRegistry()).createCertificate(
                     _assetId, 
                     _newMeterRead - oldMeterRead, 
                     _CO2OffsetMeterRead - oldCO2,  
