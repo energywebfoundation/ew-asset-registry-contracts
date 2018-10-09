@@ -30,7 +30,6 @@ contract AssetConsumingRegistryLogic is AssetLogic, AssetConsumingInterface {
     event LogNewMeterRead(uint indexed _assetId, uint _oldMeterRead, uint _newMeterRead, uint _certificatesUsedForWh, bool _smartMeterDown);
 
     UserContractLookupInterface public userContractLookup;
-    
     /// @notice Constructor
     constructor(UserContractLookupInterface _userContractLookup, AssetContractLookupInterface _assetContractLookup) RoleManagement(_userContractLookup,_assetContractLookup) public {
         userContractLookup = _userContractLookup;
@@ -58,6 +57,40 @@ contract AssetConsumingRegistryLogic is AssetLogic, AssetConsumingInterface {
     {  
         uint _assetId = AssetConsumingRegistryDB(db).createAsset(_smartMeter,_owner,_active,_matcher, _propertiesDocumentHash, _url);
         emit LogAssetCreated(msg.sender, _assetId);
+    }
+
+    function createAssetStruct (
+        address _smartMeter,
+        address _owner,
+        bool _active,
+        address[] _matcher,
+        string _propertiesDocumentHash,
+        string _url
+    ) 
+        external
+        isInitialized
+        userHasRole(RoleManagement.Role.AssetManager, _owner)
+        onlyRole(RoleManagement.Role.AssetAdmin)
+    {  
+        
+        require(_matcher.length <= AssetContractLookup(owner).maxMatcherPerAsset(),"too many matcher");
+
+        AssetConsumingRegistryDB.Asset memory a = AssetConsumingRegistryDB.Asset({
+            certificatesUsedForWh:0,
+            smartMeter: _smartMeter,
+            owner: _owner,
+            lastSmartMeterReadWh:0,
+            active: _active,
+            lastSmartMeterReadFileHash:"",
+            matcher: _matcher,
+            propertiesDocumentHash: _propertiesDocumentHash,
+            url: _url,
+            marketLookupContract: 0x0
+        });
+
+        uint _assetId = AssetConsumingRegistryDB(db).addFullAsset(a);
+        emit LogAssetCreated(msg.sender, _assetId);
+
     }
     
     /// @notice Logs meter read

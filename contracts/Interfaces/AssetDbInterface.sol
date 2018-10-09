@@ -30,5 +30,8 @@ interface AssetDbInterface {
     function setMarketLookupContract(uint _assetId, address _marketContractLookup) external;
     function getMarketLookupContract(uint _assetId) external view returns (address);
     function getAssetOwner(uint _assetId) external view returns (address);
+    function getMatcher(uint _assetId) external  view returns (address[]);
+    function addMatcher(uint _assetId, address _new) external;
+    function removeMatcher(uint _assetId, uint _index) external;
 
 }

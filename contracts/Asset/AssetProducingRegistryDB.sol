@@ -50,6 +50,16 @@ contract AssetProducingRegistryDB is Owned, AssetDbInterface {
     /// @param _owner The owner of the contract
     constructor (address _owner)  public Owned(_owner) {} 
 
+    function addFullAsset(Asset _a) 
+        public
+        onlyOwner
+        returns (uint _assetId)
+    {
+        assets.push(_a);        
+        _assetId = assets.length>0?assets.length-1:0;        
+
+    }
+
     /// @notice Creates a new energyproducing asset
     /// @param _smartMeter smartmeter-address 
     /// @param _owner owner-address
@@ -155,6 +165,11 @@ contract AssetProducingRegistryDB is Owned, AssetDbInterface {
         assets[_assetId].lastSmartMeterReadWh = _lastSmartMeterReadWh;
     }
 
+
+     function addMatcher(uint _assetId, address _new) external  {
+        assets[_assetId].matcher.push(_new);
+    }
+
     function setMarketLookupContract(uint _assetId, address _marketContractLookup) external onlyOwner {
         assets[_assetId].marketLookupContract = _marketContractLookup;
     }
@@ -198,6 +213,13 @@ contract AssetProducingRegistryDB is Owned, AssetDbInterface {
         assets[_assetId].url = _url;
     }
 
+     function removeMatcher(uint _assetId, uint _index) external onlyOwner {
+        
+        Asset storage a = assets[_assetId];
+        a.matcher[_index] = a.matcher[a.matcher.length-1];
+        a.matcher.length--;
+    }
+
     /// @notice Returns an asset
     /// @param _assetId the id belonging to an entry in the asset registry
     /// @return asset-struct
@@ -228,5 +250,9 @@ contract AssetProducingRegistryDB is Owned, AssetDbInterface {
 
     function getAssetOwner(uint _assetId) external onlyOwner view returns (address){
         return assets[_assetId].owner;
+    }
+
+   function getMatcher(uint _assetId) external onlyOwner view returns (address[]){
+        return assets[_assetId].matcher;
     }
 }

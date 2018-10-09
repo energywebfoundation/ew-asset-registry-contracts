@@ -85,7 +85,39 @@ contract AssetConsumingRegistryDB is Owned, AssetDbInterface {
         _assetId = assets.length>0?assets.length-1:0;        
 
     }
+
+    function addFullAsset(Asset _a) 
+        public
+        onlyOwner
+        returns (uint _assetId)
+    {
+        assets.push(_a);
+        _assetId = assets.length>0?assets.length-1:0;        
+
+    }
+
+    /*
+    function addMatcher(uint _assetId, address _new) external onlyOwner returns (bool){
+        Asset storage a = assets[_assetId];
+        (bool found, ) = searchArray(a.matcher, _new);
+
+        if(!found) {
+            a.matcher.push(_new);
+            return true;
+        } 
+    }
  
+    function removeMatcher(uint _assetId, address _remove) external onlyOwner returns (bool){
+        Asset storage a = assets[_assetId];
+        (bool found, uint index ) = searchArray(a.matcher, _remove);
+
+        if(found){
+            a.matcher[index] = a.matcher[a.matcher.length-1];
+            a.matcher.length-1;
+            return true;
+        }
+    }*/
+    
     /// @notice Sets if an entry in the asset registry is active
     /// @param _assetId The id belonging to an entry in the asset registry
     /// @param _active true if active
@@ -130,6 +162,10 @@ contract AssetConsumingRegistryDB is Owned, AssetDbInterface {
         assets[_assetId].marketLookupContract = _marketContractLookup;
     }
 
+    function addMatcher(uint _assetId, address _new) external  {
+        assets[_assetId].matcher.push(_new);
+    }
+
     /// @notice Sets the owner of an entry in the asset registry
     /// @param _assetId The id belonging to an entry in the asset registry
     /// @param _owner The new owner
@@ -170,6 +206,13 @@ contract AssetConsumingRegistryDB is Owned, AssetDbInterface {
         assets[_assetId].url = _url;
     }
 
+    function removeMatcher(uint _assetId, uint _index) external onlyOwner {
+        
+        Asset storage a = assets[_assetId];
+        a.matcher[_index] = a.matcher[a.matcher.length-1];
+        a.matcher.length--;
+    }
+
     /// @notice Gets the general information of an asset
     /// @param _assetId The id belonging to an entry in the asset registry
     /// @return general information of an asset
@@ -201,5 +244,8 @@ contract AssetConsumingRegistryDB is Owned, AssetDbInterface {
     function getAssetOwner(uint _assetId) external onlyOwner view returns (address){
         return assets[_assetId].owner;
     }
-    
+
+    function getMatcher(uint _assetId) external  view returns (address[]){
+        return assets[_assetId].matcher;
+    }
 }

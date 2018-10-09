@@ -86,6 +86,43 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
         ); 
         emit LogAssetCreated(msg.sender, _assetId);
     }
+
+    function createAssetStruct(  
+        address _smartMeter,
+        address _owner,
+        uint _maxOwnerChanges,
+        bool _active,
+        address[] _matcher,
+        string _propertiesDocumentHash,
+        string _url
+    )
+        external
+        userHasRole(RoleManagement.Role.AssetManager, _owner)
+        onlyRole(RoleManagement.Role.AssetAdmin)
+    {
+        require(_matcher.length <= AssetContractLookup(owner).maxMatcherPerAsset(),"too many matcher");
+
+    
+        AssetProducingRegistryDB.Asset memory a = AssetProducingRegistryDB.Asset({
+            certificatesUsedForWh: 0,
+            smartMeter: _smartMeter,
+            owner: _owner,
+            lastSmartMeterReadWh: 0,
+            active: _active,
+            lastSmartMeterReadFileHash: "",
+            matcher: _matcher,
+            certificatesCreatedForWh:0,
+            lastSmartMeterCO2OffsetRead:0,
+            maxOwnerChanges: _maxOwnerChanges,
+            propertiesDocumentHash: _propertiesDocumentHash,
+            url: _url,
+            marketLookupContract: 0x0
+        });
+        
+    //    AssetProducingRegistryDB(db).addFullAsset(a);
+       emit LogAssetCreated(msg.sender,  AssetProducingRegistryDB(db).addFullAsset(a));
+
+    }
     
     /// @notice Logs meter read
     /// @param _assetId The id belonging to an entry in the asset registry

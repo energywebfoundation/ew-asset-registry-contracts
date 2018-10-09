@@ -124,15 +124,17 @@ describe('AssetProducingLogic', () => {
 
         let failed = false;
         try {
-            await assetProducingLogic.createAsset(
+            await assetProducingLogic.createAssetStruct(
                 assetSmartmeter,
                 assetOwnerAddress,
                 2,
-                matcher,
                 true,
+                ([matcher] as any),
                 'propertiesDocumentHash',
                 'url',
-                { privateKey: privateKeyDeployment },
+                {
+                    privateKey: assetOwnerPK,
+                },
             );
 
         }
@@ -150,12 +152,12 @@ describe('AssetProducingLogic', () => {
 
         let failed = false;
         try {
-            await assetProducingLogic.createAsset(
+            await assetProducingLogic.createAssetStruct(
                 assetSmartmeter,
                 assetOwnerAddress,
                 2,
-                matcher,
                 true,
+                ([matcher] as any),
                 'propertiesDocumentHash',
                 'url',
                 { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
@@ -182,12 +184,12 @@ describe('AssetProducingLogic', () => {
 
         let failed = false;
         try {
-            await assetProducingLogic.createAsset(
+            await assetProducingLogic.createAssetStruct(
                 assetSmartmeter,
                 assetOwnerAddress,
                 2,
-                matcher,
                 true,
+                ([matcher] as any),
                 'propertiesDocumentHash',
                 'url',
                 { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
@@ -202,12 +204,12 @@ describe('AssetProducingLogic', () => {
     });
 
     it('should onboard a new asset', async () => {
-        const tx = await assetProducingLogic.createAsset(
+        const tx = await assetProducingLogic.createAssetStruct(
             assetSmartmeter,
             assetOwnerAddress,
             2,
-            matcher,
             true,
+            ([matcher] as any),
             'propertiesDocumentHash',
             'url',
             { privateKey: privateKeyDeployment });
@@ -792,5 +794,285 @@ describe('AssetProducingLogic', () => {
 
         assert.equal(await assetProducingLogic.getMarketLookupContract(0), '0x1000000000000000000000000000000000000005');
 
+    });
+
+    it('should not add a matcher as admin', async () => {
+
+        let failed = false;
+
+        try {
+            await assetProducingLogic.addMatcher(
+                0,
+                '0x1000000000000000000000000000000000000000',
+                { privateKey: privateKeyDeployment });
+        } catch (ex) {
+            failed = true;
+        }
+
+        assert.isTrue(failed);
+    });
+
+    it('should not add a matcher as random user', async () => {
+
+        let failed = false;
+
+        try {
+            await assetProducingLogic.addMatcher(
+                0,
+                '0x1000000000000000000000000000000000000000',
+                { privateKey: matcherPK });
+        } catch (ex) {
+            failed = true;
+        }
+
+        assert.isTrue(failed);
+    });
+
+    it('should add a matcher', async () => {
+
+        await assetProducingLogic.addMatcher(
+            0,
+            '0x1000000000000000000000000000000000000000',
+            { privateKey: assetOwnerPK });
+        const matcherArray = (await assetProducingLogic.getMatcher(0));
+
+        assert.deepEqual(matcherArray, [matcher, '0x1000000000000000000000000000000000000000']);
+
+    });
+
+    it('should not add the same a matcher', async () => {
+
+        await assetProducingLogic.addMatcher(
+            0,
+            '0x1000000000000000000000000000000000000000',
+            { privateKey: assetOwnerPK });
+        const matcherArray = (await assetProducingLogic.getMatcher(0));
+
+        assert.deepEqual(matcherArray, [matcher, '0x1000000000000000000000000000000000000000']);
+
+    });
+
+    it('should not remove a matcher as admin', async () => {
+
+        let failed = false;
+
+        try {
+            await assetProducingLogic.removeMatcher(
+                0,
+                matcher,
+                { privateKey: privateKeyDeployment });
+        } catch (ex) {
+            failed = true;
+        }
+
+        assert.isTrue(failed);
+    });
+
+    it('should not remove a matcher as random user', async () => {
+
+        let failed = false;
+
+        try {
+            await assetProducingLogic.removeMatcher(
+                0,
+                matcher,
+                { privateKey: matcherPK });
+        } catch (ex) {
+            failed = true;
+        }
+
+        assert.isTrue(failed);
+    });
+
+    it('should remove a matcher', async () => {
+
+        await assetProducingLogic.removeMatcher(
+            0,
+            matcher,
+            { privateKey: assetOwnerPK });
+        const matcherArray = (await assetProducingLogic.getMatcher(0));
+
+        assert.deepEqual(matcherArray, ['0x1000000000000000000000000000000000000000']);
+
+    });
+
+    it('should not remove a non existing-matcher', async () => {
+
+        await assetProducingLogic.removeMatcher(
+            0,
+            matcher,
+            { privateKey: assetOwnerPK });
+        const matcherArray = (await assetProducingLogic.getMatcher(0));
+
+        assert.deepEqual(matcherArray, ['0x1000000000000000000000000000000000000000']);
+
+    });
+
+    it('should add more matcher', async () => {
+
+        for (let i = 0; i < 10; i++) {
+            await assetProducingLogic.addMatcher(
+                0,
+                '0x100000000000000000000000000000000000000' + i,
+                { privateKey: assetOwnerPK });
+        }
+
+        const matcherArray = (await assetProducingLogic.getMatcher(0));
+        assert.deepEqual(matcherArray, ['0x1000000000000000000000000000000000000000',
+            '0x1000000000000000000000000000000000000001',
+            '0x1000000000000000000000000000000000000002',
+            '0x1000000000000000000000000000000000000003',
+            '0x1000000000000000000000000000000000000004',
+            '0x1000000000000000000000000000000000000005',
+            '0x1000000000000000000000000000000000000006',
+            '0x1000000000000000000000000000000000000007',
+            '0x1000000000000000000000000000000000000008',
+            '0x1000000000000000000000000000000000000009']);
+    });
+
+    it('should not add a 10th matcher', async () => {
+
+        let failed = false;
+        try {
+            await assetProducingLogic.addMatcher(
+                0,
+                '0x1000000000000000000000000000000000000010',
+                { privateKey: assetOwnerPK });
+        } catch (ex) {
+            failed = true;
+        }
+
+        assert.isTrue(failed);
+
+    });
+
+    it('should remove all 10 matcher', async () => {
+
+        for (let i = 9; i >= 0; i--) {
+            await assetProducingLogic.removeMatcher(
+                0,
+                '0x100000000000000000000000000000000000000' + i,
+                { privateKey: assetOwnerPK });
+        }
+
+        const matcherArray = (await assetProducingLogic.getMatcher(0));
+        assert.deepEqual(matcherArray, []);
+
+    });
+
+    it('should not onboard assets with too many matcher', async () => {
+
+        let failed = false;
+        try {
+            await assetProducingLogic.createAssetStruct(
+                assetSmartmeter,
+                assetOwnerAddress,
+                2,
+                true,
+                ([
+                    '0x1000000000000000000000000000000000000000',
+                    '0x1000000000000000000000000000000000000001',
+                    '0x1000000000000000000000000000000000000002',
+                    '0x1000000000000000000000000000000000000003',
+                    '0x1000000000000000000000000000000000000004',
+                    '0x1000000000000000000000000000000000000005',
+                    '0x1000000000000000000000000000000000000006',
+                    '0x1000000000000000000000000000000000000007',
+                    '0x1000000000000000000000000000000000000008',
+                    '0x1000000000000000000000000000000000000009',
+                    '0x1000000000000000000000000000000000000010',
+                ] as any),
+                'propertiesDocumentHash',
+                'url',
+                { privateKey: privateKeyDeployment });
+        }
+        catch (ex) {
+            failed = true;
+        }
+        assert.isTrue(failed);
+    });
+
+    it('should onboard assets with 10 matcher', async () => {
+
+        await assetProducingLogic.createAssetStruct(
+            assetSmartmeter,
+            assetOwnerAddress,
+            2,
+            true,
+            ([
+                '0x1000000000000000000000000000000000000000',
+                '0x1000000000000000000000000000000000000001',
+                '0x1000000000000000000000000000000000000002',
+                '0x1000000000000000000000000000000000000003',
+                '0x1000000000000000000000000000000000000004',
+                '0x1000000000000000000000000000000000000005',
+                '0x1000000000000000000000000000000000000006',
+                '0x1000000000000000000000000000000000000007',
+                '0x1000000000000000000000000000000000000008',
+                '0x1000000000000000000000000000000000000009',
+            ] as any),
+            'propertiesDocumentHash',
+            'url',
+            { privateKey: privateKeyDeployment });
+
+        assert.deepEqual(await assetProducingLogic.getAsset(1), {
+            0: '0',
+            1: assetSmartmeter,
+            2: assetOwnerAddress,
+            3: '0',
+            4: true,
+            5: '',
+            6: [
+                '0x1000000000000000000000000000000000000000',
+                '0x1000000000000000000000000000000000000001',
+                '0x1000000000000000000000000000000000000002',
+                '0x1000000000000000000000000000000000000003',
+                '0x1000000000000000000000000000000000000004',
+                '0x1000000000000000000000000000000000000005',
+                '0x1000000000000000000000000000000000000006',
+                '0x1000000000000000000000000000000000000007',
+                '0x1000000000000000000000000000000000000008',
+                '0x1000000000000000000000000000000000000009',
+            ],
+            7: '0',
+            8: '0',
+            9: '2',
+            10: 'propertiesDocumentHash',
+            11: 'url',
+            _certificatesUsedForWh: '0',
+            _smartMeter: assetSmartmeter,
+            _owner: assetOwnerAddress,
+            _lastSmartMeterReadWh: '0',
+            _active: true,
+            _lastSmartMeterReadFileHash: '',
+            _matcher: [
+                '0x1000000000000000000000000000000000000000',
+                '0x1000000000000000000000000000000000000001',
+                '0x1000000000000000000000000000000000000002',
+                '0x1000000000000000000000000000000000000003',
+                '0x1000000000000000000000000000000000000004',
+                '0x1000000000000000000000000000000000000005',
+                '0x1000000000000000000000000000000000000006',
+                '0x1000000000000000000000000000000000000007',
+                '0x1000000000000000000000000000000000000008',
+                '0x1000000000000000000000000000000000000009',
+            ],
+            _certificatesCreatedForWh: '0',
+            _lastSmartMeterCO2OffsetRead: '0',
+            _maxOwnerChanges: '2',
+            _propertiesDocumentHash: 'propertiesDocumentHash',
+            _url: 'url',
+        });
+
+        assert.deepEqual(await assetProducingLogic.getMatcher(1), ['0x1000000000000000000000000000000000000000',
+            '0x1000000000000000000000000000000000000001',
+            '0x1000000000000000000000000000000000000002',
+            '0x1000000000000000000000000000000000000003',
+            '0x1000000000000000000000000000000000000004',
+            '0x1000000000000000000000000000000000000005',
+            '0x1000000000000000000000000000000000000006',
+            '0x1000000000000000000000000000000000000007',
+            '0x1000000000000000000000000000000000000008',
+            '0x1000000000000000000000000000000000000009']);
     });
 });

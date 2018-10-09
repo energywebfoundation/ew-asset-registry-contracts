@@ -20,6 +20,7 @@ import "ew-user-registry-contracts/Users/RoleManagement.sol";
 import "ew-utils-general-contracts/Interfaces/Updatable.sol";
 import "../../contracts/Interfaces/AssetDbInterface.sol";
 import "../../contracts/Interfaces/AssetGeneralInterface.sol";
+import "../../contracts/AssetContractLookup.sol";
 
 
 /// @title Contract for storing the current logic-contracts-addresses for the certificate of origin
@@ -112,6 +113,57 @@ contract AssetLogic is RoleManagement, Updatable, AssetGeneralInterface {
         returns (address)
     {
         return db.getMarketLookupContract(_assetId);
+    }
+
+    function getMatcher(uint _assetId)
+        external
+        view
+        returns(address[])
+    {
+        return db.getMatcher(_assetId);
+    }
+
+    function searchArray(address[] _array, address _toFind) public pure returns (bool _found, uint _index){
+
+        if(_array.length == 0) return (false, 0);
+
+        for(uint i = 0; i < _array.length; i++){
+            if(_array[i] == _toFind) return (true, i);
+        }
+    }
+
+    function addMatcher(uint _assetId, address _new) external {
+       // Asset memory a = assets[_assetId];
+        
+        require(msg.sender == db.getAssetOwner(_assetId),"addMatcher: not the owner");
+    
+        address[] memory matcher = db.getMatcher(_assetId);
+        (bool found, ) = searchArray(matcher, _new);
+
+        if(!found) {
+
+            require(matcher.length+1 <= AssetContractLookup(owner).maxMatcherPerAsset(),"addMatcher: too many matcher already");
+            
+            db.addMatcher(_assetId,_new);
+            
+        } 
+        
+    }
+ 
+    function removeMatcher(uint _assetId, address _remove) external  {
+    //    Asset memory a = assets[_assetId];
+        require(msg.sender == db.getAssetOwner(_assetId),"addMatcher: not the owner");
+
+        address[] memory matcher = db.getMatcher(_assetId);
+        (bool found, uint index) = searchArray(matcher, _remove);
+
+        if(found){
+            
+            db.removeMatcher(_assetId,index);
+         //   db.setMatcher(_assetId,tempMatcher);
+
+         //   a.matcher.length-1;
+        }
     }
 
 }
