@@ -23,5 +23,5 @@ interface AssetContractLookupInterface {
     function assetConsumingRegistry() external view returns (address);
     function assetProducingRegistry() external view returns (address);
     function userRegistry() external view returns (address);
-
+    function maxMatcherPerAsset() external view returns (uint);
 }
