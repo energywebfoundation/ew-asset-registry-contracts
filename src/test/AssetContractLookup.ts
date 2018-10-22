@@ -23,8 +23,8 @@ import { migrateAssetRegistryContracts } from '../utils/migrateContracts';
 import { AssetContractLookup } from '../wrappedContracts/AssetContractLookup';
 import { AssetProducingRegistryLogic } from '../wrappedContracts/AssetProducingRegistryLogic';
 import { AssetConsumingRegistryLogic } from '../wrappedContracts/AssetConsumingRegistryLogic';
-import { AssetProducingRegistryDB } from '../wrappedContracts/AssetProducingRegistryDB';
-import { AssetConsumingRegistryDB } from '../wrappedContracts/AssetConsumingRegistryDB';
+import { AssetConsumingDB } from '../wrappedContracts/AssetConsumingDB';
+import { AssetProducingDB } from '../wrappedContracts/AssetProducingDB';
 
 describe('AssetContractLookup', () => {
 
@@ -42,8 +42,8 @@ describe('AssetContractLookup', () => {
     let assetContractLookup: AssetContractLookup;
     let assetProducingLogic: AssetProducingRegistryLogic;
     let assetConsumingLogic: AssetConsumingRegistryLogic;
-    let assetProducingDB: AssetProducingRegistryDB;
-    let assetConsumingDB: AssetConsumingRegistryDB;
+    let assetProducingDB: AssetProducingDB;
+    let assetConsumingDB: AssetConsumingDB;
 
     it('should deploy the contracts', async () => {
 
@@ -65,8 +65,8 @@ describe('AssetContractLookup', () => {
         assetContractLookup = new AssetContractLookup((web3 as any));
         assetProducingLogic = new AssetProducingRegistryLogic((web3 as any));
         assetConsumingLogic = new AssetConsumingRegistryLogic((web3 as any));
-        assetProducingDB = new AssetProducingRegistryDB((web3 as any));
-        assetConsumingDB = new AssetConsumingRegistryDB((web3 as any));
+        assetProducingDB = new AssetProducingDB((web3 as any));
+        assetConsumingDB = new AssetConsumingDB((web3 as any));
 
         Object.keys(deployedContracts).forEach(async (key) => {
 

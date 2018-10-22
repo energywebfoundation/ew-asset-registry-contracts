@@ -17,7 +17,7 @@
 pragma solidity ^0.4.24;
 pragma experimental ABIEncoderV2;
 
-import "../../contracts/Asset/AssetConsumingRegistryDB.sol";
+import "../../contracts/Asset/AssetConsumingDB.sol";
 import "../../contracts/AssetContractLookup.sol";
 import "../../contracts/Asset/AssetLogic.sol";
 import "../../contracts/Interfaces/AssetConsumingInterface.sol";
@@ -27,7 +27,7 @@ import "../../contracts/Interfaces/AssetConsumingInterface.sol";
 /// @dev Needs a valid AssetConsumingRegistryDB contract to function correctly 
 contract AssetConsumingRegistryLogic is AssetLogic, AssetConsumingInterface {
 
-    event LogNewMeterRead(uint indexed _assetId, uint _oldMeterRead, uint _newMeterRead, uint _certificatesUsedForWh, bool _smartMeterDown);
+    event LogNewMeterRead(uint indexed _assetId, uint _oldMeterRead, uint _newMeterRead);
 
     UserContractLookupInterface public userContractLookup;
     /// @notice Constructor
@@ -35,64 +35,6 @@ contract AssetConsumingRegistryLogic is AssetLogic, AssetConsumingInterface {
         userContractLookup = _userContractLookup;
     }
 
-    /// @notice Sets the general information of an asset in the database
-    /// @param _smartMeter The address of the smart meter
-    /// @param _owner The address of the asset owner
-    /// @param _active true if active
-    /// @param _matcher matcher-address
-    /// @param _propertiesDocumentHash propertiesDocumentHash
-    /// @param _url url
-    function createAsset (
-        address _smartMeter,
-        address _owner,
-        bool _active,
-        address _matcher,
-        string _propertiesDocumentHash,
-        string _url
-    ) 
-        external
-        isInitialized
-        userHasRole(RoleManagement.Role.AssetManager, _owner)
-        onlyRole(RoleManagement.Role.AssetAdmin)
-    {  
-        uint _assetId = AssetConsumingRegistryDB(db).createAsset(_smartMeter,_owner,_active,_matcher, _propertiesDocumentHash, _url);
-        emit LogAssetCreated(msg.sender, _assetId);
-    }
-
-    function createAssetStruct (
-        address _smartMeter,
-        address _owner,
-        bool _active,
-        address[] _matcher,
-        string _propertiesDocumentHash,
-        string _url
-    ) 
-        external
-        isInitialized
-        userHasRole(RoleManagement.Role.AssetManager, _owner)
-        onlyRole(RoleManagement.Role.AssetAdmin)
-    {  
-        
-        require(_matcher.length <= AssetContractLookup(owner).maxMatcherPerAsset(),"too many matcher");
-
-        AssetConsumingRegistryDB.Asset memory a = AssetConsumingRegistryDB.Asset({
-            certificatesUsedForWh:0,
-            smartMeter: _smartMeter,
-            owner: _owner,
-            lastSmartMeterReadWh:0,
-            active: _active,
-            lastSmartMeterReadFileHash:"",
-            matcher: _matcher,
-            propertiesDocumentHash: _propertiesDocumentHash,
-            url: _url,
-            marketLookupContract: 0x0
-        });
-
-        uint _assetId = AssetConsumingRegistryDB(db).addFullAsset(a);
-        emit LogAssetCreated(msg.sender, _assetId);
-
-    }
-    
     /// @notice Logs meter read
     /// @param _assetId The id belonging to an entry in the asset registry
     /// @param _newMeterRead The current meter read of the asset
@@ -102,16 +44,16 @@ contract AssetConsumingRegistryLogic is AssetLogic, AssetConsumingInterface {
         external
         isInitialized
     {
-        AssetConsumingRegistryDB.Asset memory asset = AssetConsumingRegistryDB((db)).getAsset(_assetId);
+        AssetConsumingDB.AssetGeneral memory asset = db.getAssetGeneral(_assetId);
         require(asset.smartMeter == msg.sender,"saveSmartMeterRead: wrong sender");
         require(asset.active,"saveSmartMeterRead: asset not active");
 
         uint oldMeterRead = asset.lastSmartMeterReadWh;
         require(_newMeterRead>oldMeterRead,"saveSmartMeterRead: meterread too low");
 
-        emit LogNewMeterRead(_assetId,  asset.lastSmartMeterReadWh, _newMeterRead, asset.certificatesUsedForWh, _smartMeterDown);
+        emit LogNewMeterRead(_assetId,  asset.lastSmartMeterReadWh, _newMeterRead);
         db.setLastSmartMeterReadFileHash(_assetId, _lastSmartMeterReadFileHash);
-        AssetConsumingRegistryDB((db)).setLastSmartMeterReadWh(_assetId, _newMeterRead);
+        AssetConsumingDB((db)).setLastSmartMeterReadWh(_assetId, _newMeterRead);
     }
 
 /*
@@ -129,31 +71,63 @@ contract AssetConsumingRegistryLogic is AssetLogic, AssetConsumingInterface {
     /// @notice Gets an asset
     /// @param _assetId The id belonging to an entry in the asset registry
     /// @return Full informations of an asset
-    function getAsset(uint _assetId) 
+    function getAssetById(uint _assetId) 
         external
         view
         returns (
-            address _smartMeter,
-            address _owner,
-            uint _lastSmartMeterReadWh,
-            uint _certificatesUsedForWh,
-            bool _active,
-            string _lastSmartMeterReadFileHash,
-            string _propertiesDocumentHash,
-            string _url,
-            address[] _matcher
-            )
+            AssetConsumingDB.Asset
+        )
     {        
-        AssetConsumingRegistryDB.Asset memory asset = AssetConsumingRegistryDB((db)).getAsset(_assetId);
-        _smartMeter = asset.smartMeter;
-        _owner = asset.owner;
-        _lastSmartMeterReadWh = asset.lastSmartMeterReadWh;
-        _active = asset.active;
-        _lastSmartMeterReadFileHash = asset.lastSmartMeterReadFileHash;
-        _certificatesUsedForWh = asset.certificatesUsedForWh;
-        _propertiesDocumentHash = asset.propertiesDocumentHash;
-        _url = asset.url;
-        _matcher = asset.matcher;
+        return AssetConsumingDB(db).getAssetById(_assetId);
+    }
+
+    function getAssetBySmartMeter(address _smartMeter) 
+        external 
+        view 
+        returns (  
+            AssetConsumingDB.Asset
+        )
+    {
+        return AssetConsumingDB(db).getAssetBySmartMeter(_smartMeter);
+    }
+
+    function createAsset(  
+        address _smartMeter,
+        address _owner,
+        bool _active,
+        address[] _matcher,
+        string _propertiesDocumentHash,
+        string _url
+    ) 
+        external 
+        userHasRole(RoleManagement.Role.AssetManager, _owner)
+        onlyRole(RoleManagement.Role.AssetAdmin)
+
+    {
+        require(_matcher.length <= AssetContractLookup(owner).maxMatcherPerAsset(),"addMatcher: too many matcher already");
+        require(!checkAssetExist(_smartMeter),"smartmeter does already exist");
+
+        AssetGeneral memory a = AssetGeneral({
+            smartMeter: _smartMeter,
+            owner: _owner,
+            lastSmartMeterReadWh: 0,
+            active: true,
+            lastSmartMeterReadFileHash: "",
+            matcher: _matcher,
+            propertiesDocumentHash: _propertiesDocumentHash,
+            url: _url,
+            marketLookupContract: 0x0
+        });
+
+        AssetConsumingDB.Asset memory _asset = AssetConsumingDB.Asset(
+            {assetGeneral: a}
+        );
+
+        emit LogAssetCreated(msg.sender, AssetConsumingDB(db).addFullAsset(_asset));
+    }
+
+    function checkAssetExist(address _smartMeter) public view returns (bool){
+        return checkAssetGeneralExistingStatus(AssetConsumingDB(db).getAssetBySmartMeter(_smartMeter).assetGeneral);
     }
 
     

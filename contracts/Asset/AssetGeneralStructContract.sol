@@ -12,16 +12,24 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details, at <http://www.gnu.org/licenses/>.
 //
-// @authors: slock.it GmbH, Martin Kuechler, martin.kuchler@slock.it
+// @authors: Martin Kuechler, martin.kuechler@slock.it
 
 pragma solidity ^0.4.24;
 pragma experimental ABIEncoderV2;
 
+contract AssetGeneralStructContract {
 
-/// @title this interface defines the functions of the AssetContractLookup-Contract 
-interface AssetConsumingInterface {
-    //function createAsset(address _smartMeter, address _owner, bool _active, address _matcher, string _propertiesDocumentHash, string _url) external; 
-    function saveSmartMeterRead(uint _assetId, uint _newMeterRead, string _lastSmartMeterReadFileHash, bool _smartMeterDown) external;
-//    function setConsumptionForPeriode(uint _assetId, uint _consumed) external;
-   // function getAsset(uint _assetId) external view returns (address _smartMeter, address _owner, uint _lastSmartMeterReadWh, uint _certificatesUsedForWh, bool _active, string _lastSmartMeterReadFileHash, string _propertiesDocumentHash, string _url, address[] _matcher);
+    struct AssetGeneral {
+        address smartMeter;
+        address owner;
+        uint lastSmartMeterReadWh;
+        bool active;
+        string lastSmartMeterReadFileHash;
+        address[] matcher;
+        string propertiesDocumentHash;
+        string url;
+        address marketLookupContract;
+    } 
+    
+
 }

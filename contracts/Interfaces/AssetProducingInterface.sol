@@ -17,14 +17,12 @@
 pragma solidity ^0.4.24;
 pragma experimental ABIEncoderV2;
 
-import "../../contracts/Asset/AssetProducingRegistryDB.sol";
-
 /// @title this interface defines the functions of the AssetContractLookup-Contract 
 interface AssetProducingInterface {
-    function createAsset(address _smartMeter, address _owner, uint _maxOwnerChanges, address _matcher, bool _active, string _propertiesDocumentHash, string _url) external;
-    function saveSmartMeterRead(uint _assetId, uint _newMeterRead, bool _smartMeterDown, string _lastSmartMeterReadFileHash, uint _CO2OffsetMeterRead,  bool _CO2OffsetServiceDown) external;
-    function saveSmartMeterReadBundle(uint _assetId, uint _newMeterRead, bool _smartMeterDown, string _lastSmartMeterReadFileHash, uint _CO2OffsetMeterRead, bool _CO2OffsetServiceDown) external;
-    function getAsset(uint _assetId) external view returns (uint _certificatesUsedForWh, address _smartMeter, address _owner, uint _lastSmartMeterReadWh, bool _active, string _lastSmartMeterReadFileHash, address[] _matcher, uint _certificatesCreatedForWh, uint _lastSmartMeterCO2OffsetRead, uint _maxOwnerChanges, string _propertiesDocumentHash, string _url);
-    function getFullAsset(uint _assetId) external view returns (AssetProducingRegistryDB.Asset);
+   // function createAsset(address _smartMeter, address _owner, uint _maxOwnerChanges, address _matcher, bool _active, string _propertiesDocumentHash, string _url) external;
+  //  function saveSmartMeterRead(uint _assetId, uint _newMeterRead, bool _smartMeterDown, string _lastSmartMeterReadFileHash, uint _CO2OffsetMeterRead,  bool _CO2OffsetServiceDown) external;
+  //  function saveSmartMeterReadBundle(uint _assetId, uint _newMeterRead, bool _smartMeterDown, string _lastSmartMeterReadFileHash, uint _CO2OffsetMeterRead, bool _CO2OffsetServiceDown) external;
+ //   function getAsset(uint _assetId) external view returns (uint _certificatesUsedForWh, address _smartMeter, address _owner, uint _lastSmartMeterReadWh, bool _active, string _lastSmartMeterReadFileHash, address[] _matcher, uint _certificatesCreatedForWh, uint _lastSmartMeterCO2OffsetRead, uint _maxOwnerChanges, string _propertiesDocumentHash, string _url);
+  //  function getFullAsset(uint _assetId) external view returns (AssetProducingRegistryDB.Asset);
     function getLastSmartMeterReadFileHash(uint _assetId) external view returns (string); 
 }

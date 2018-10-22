@@ -17,14 +17,12 @@
 pragma solidity ^0.4.24;
 pragma experimental ABIEncoderV2;
 
-import "../../contracts/Asset/AssetProducingRegistryDB.sol";
+import "../../contracts/Asset/AssetProducingDB.sol";
 import "../../contracts/AssetContractLookup.sol";
 import "ew-origin-contracts/Interfaces/CertificateInterface.sol";
 import "ew-origin-contracts/Interfaces/EnergyCertificateBundleInterface.sol";
 import "ew-origin-contracts/Interfaces/OriginContractLookupInterface.sol";
 
-//import "../Trading/CertificateLogic.sol";
-//import "../Trading/EnergyCertificateBundleLogic.sol";
 import "../../contracts/Asset/AssetLogic.sol";
 import "ew-utils-general-contracts/Msc/Owned.sol";
 import "../../contracts/Interfaces/AssetProducingInterface.sol";
@@ -38,12 +36,7 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
     event LogNewMeterRead(
         uint indexed _assetId, 
         uint _oldMeterRead, 
-        uint _newMeterRead, 
-        bool _smartMeterDown, 
-        uint _certificatesCreatedForWh, 
-        uint _oldCO2OffsetReading, 
-        uint _newCO2OffsetReading, 
-        bool _serviceDown
+        uint _newMeterRead
     );
 
     UserContractLookupInterface public userContractLookup;
@@ -53,128 +46,47 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
         userContractLookup = _userContractLookup;
     }
 
-    /// @notice Sets the general information of an asset in the database
-    /// @param _smartMeter The address of the smart meter
-    /// @param _owner The address of the asset owner
-    /// @param _maxOwnerChanges amount of allowed owner changes for a certificate created by this asset
-    /// @param _matcher matcher address 
-    /// @param _active true if active
-    /// @param _propertiesDocumentHash document-hash with all the properties of the asset
-    /// @param _url url-address of the asset
-    function createAsset(
-        address _smartMeter,
-        address _owner,
-        uint _maxOwnerChanges,
-        address _matcher,
-        bool _active,
-        string _propertiesDocumentHash,
-        string _url
-    ) 
-        external
-        isInitialized
-        userHasRole(RoleManagement.Role.AssetManager, _owner)
-        onlyRole(RoleManagement.Role.AssetAdmin)
-    {  
-        uint _assetId = AssetProducingRegistryDB((db)).createAsset(
-            _smartMeter, 
-            _owner, 
-            _maxOwnerChanges, 
-            _active, 
-            _matcher, 
-            _propertiesDocumentHash, 
-            _url
-        ); 
-        emit LogAssetCreated(msg.sender, _assetId);
-    }
 
-    function createAssetStruct(  
-        address _smartMeter,
-        address _owner,
-        uint _maxOwnerChanges,
-        bool _active,
-        address[] _matcher,
-        string _propertiesDocumentHash,
-        string _url
-    )
-        external
-        userHasRole(RoleManagement.Role.AssetManager, _owner)
-        onlyRole(RoleManagement.Role.AssetAdmin)
-    {
-        require(_matcher.length <= AssetContractLookup(owner).maxMatcherPerAsset(),"too many matcher");
-
-    
-        AssetProducingRegistryDB.Asset memory a = AssetProducingRegistryDB.Asset({
-            certificatesUsedForWh: 0,
-            smartMeter: _smartMeter,
-            owner: _owner,
-            lastSmartMeterReadWh: 0,
-            active: _active,
-            lastSmartMeterReadFileHash: "",
-            matcher: _matcher,
-            certificatesCreatedForWh:0,
-            lastSmartMeterCO2OffsetRead:0,
-            maxOwnerChanges: _maxOwnerChanges,
-            propertiesDocumentHash: _propertiesDocumentHash,
-            url: _url,
-            marketLookupContract: 0x0
-        });
-        
-    //    AssetProducingRegistryDB(db).addFullAsset(a);
-       emit LogAssetCreated(msg.sender,  AssetProducingRegistryDB(db).addFullAsset(a));
-
-    }
-    
     /// @notice Logs meter read
     /// @param _assetId The id belonging to an entry in the asset registry
     /// @param _newMeterRead The current meter read of the asset
-    /// @param _smartMeterDown flag if there was an error with the smart meter
     /// @param _lastSmartMeterReadFileHash Last meter read file hash
-    /// @param _CO2OffsetMeterRead new CO2-offset-reading
-    /// @param _CO2OffsetServiceDown flag if there was an error with the co2-offset-server
     function saveSmartMeterReadInternal(
         uint _assetId, 
         uint _newMeterRead, 
-        bool _smartMeterDown, 
         string _lastSmartMeterReadFileHash, 
-        uint _CO2OffsetMeterRead, 
-        bool _CO2OffsetServiceDown,
         bool _bundle
         
     ) 
         internal
         isInitialized
     {
-        AssetProducingRegistryDB.Asset memory asset = AssetProducingRegistryDB((db)).getAsset(_assetId);
-        require(asset.smartMeter == msg.sender,"saveSmartMeterRead: wrong sender");
-        require(asset.active,"saveSmartMeterRead: asset not active");
+        AssetProducingDB.Asset memory asset = AssetProducingDB(db).getAssetById(_assetId);
+        require(asset.assetGeneral.smartMeter == msg.sender,"saveSmartMeterRead: wrong sender");
+        require(asset.assetGeneral.active,"saveSmartMeterRead: asset not active");
 
-        uint oldMeterRead = asset.lastSmartMeterReadWh;
-        uint oldCO2 = asset.lastSmartMeterCO2OffsetRead;
+        uint oldMeterRead = asset.assetGeneral.lastSmartMeterReadWh; 
 
-        require(_newMeterRead>oldMeterRead,"saveSmartMeterRead: meterread too low");
-        require(_CO2OffsetMeterRead>oldCO2,"saveSmartMeterRead: CO2 read too low");
+        require(_newMeterRead > oldMeterRead,"saveSmartMeterRead: meterread too low");
         /// @dev need to check if new meter read is higher then the old one
-        AssetProducingRegistryDB(db).setLastSmartMeterReadFileHash(_assetId, _lastSmartMeterReadFileHash);
-        AssetProducingRegistryDB(db).setLastSmartMeterReadWh(_assetId, _newMeterRead);
-        AssetProducingRegistryDB(db).setLastCO2OffsetReading(_assetId,_CO2OffsetMeterRead);
-        AssetProducingRegistryDB(db).setCertificatesCreatedForWh(_assetId, _newMeterRead-oldMeterRead);
+        db.setLastSmartMeterReadFileHash(_assetId, _lastSmartMeterReadFileHash);
+        db.setLastSmartMeterReadWh(_assetId, _newMeterRead);
 
-        /// TODO: re-enable certificates
-        if(asset.marketLookupContract != 0x0){
+        if(asset.assetGeneral.marketLookupContract != 0x0){
             if (_bundle) {
-                EnergyCertificateBundleInterface(OriginContractLookupInterface(asset.marketLookupContract).originLogicRegistry()).createBundle(
+                EnergyCertificateBundleInterface(OriginContractLookupInterface(asset.assetGeneral.marketLookupContract).originLogicRegistry()).createBundle(
                     _assetId, 
                     _newMeterRead - oldMeterRead, 
-                    _CO2OffsetMeterRead - oldCO2,  
-                    asset.matcher
+                    asset.maxOwnerChanges,  
+                    asset.assetGeneral.matcher
                 ); 
                 
             } else {
-                CertificateInterface(OriginContractLookupInterface(asset.marketLookupContract).originLogicRegistry()).createCertificate(
+                CertificateInterface(OriginContractLookupInterface(asset.assetGeneral.marketLookupContract).originLogicRegistry()).createCertificate(
                     _assetId, 
                     _newMeterRead - oldMeterRead, 
-                    _CO2OffsetMeterRead - oldCO2,  
-                    asset.matcher
+                    asset.maxOwnerChanges,  
+                    asset.assetGeneral.matcher
                 ); 
             }
         }
@@ -182,102 +94,125 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
         emit LogNewMeterRead(
             _assetId, 
             oldMeterRead, 
-            _newMeterRead, 
-            _smartMeterDown, 
-            asset.certificatesCreatedForWh, 
-            asset.lastSmartMeterCO2OffsetRead, 
-            _CO2OffsetMeterRead, 
-            _CO2OffsetServiceDown
+            _newMeterRead
         );
     }
 
     /// @notice Logs meter read
     /// @param _assetId The id belonging to an entry in the asset registry
     /// @param _newMeterRead The current meter read of the asset
-    /// @param _smartMeterDown flag if there was an error with the smart meter
     /// @param _lastSmartMeterReadFileHash Last meter read file hash
-    /// @param _CO2OffsetMeterRead new CO2-offset-reading
-    /// @param _CO2OffsetServiceDown flag if there was an error with the co2-offset-server
     function saveSmartMeterRead(
         uint _assetId, 
         uint _newMeterRead, 
-        bool _smartMeterDown, 
-        string _lastSmartMeterReadFileHash, 
-        uint _CO2OffsetMeterRead, 
-        bool _CO2OffsetServiceDown
+        string _lastSmartMeterReadFileHash
     ) 
         external
         isInitialized
     {
-        saveSmartMeterReadInternal(_assetId, _newMeterRead, _smartMeterDown, _lastSmartMeterReadFileHash, _CO2OffsetMeterRead, _CO2OffsetServiceDown, false);
+        saveSmartMeterReadInternal(_assetId, _newMeterRead, _lastSmartMeterReadFileHash, false);
     }
 
         /// @notice Logs meter read
     /// @param _assetId The id belonging to an entry in the asset registry
     /// @param _newMeterRead The current meter read of the asset
-    /// @param _smartMeterDown flag if there was an error with the smart meter
     /// @param _lastSmartMeterReadFileHash Last meter read file hash
-    /// @param _CO2OffsetMeterRead new CO2-offset-reading
-    /// @param _CO2OffsetServiceDown flag if there was an error with the co2-offset-server
     function saveSmartMeterReadBundle(
         uint _assetId, 
         uint _newMeterRead, 
-        bool _smartMeterDown, 
-        string _lastSmartMeterReadFileHash, 
-        uint _CO2OffsetMeterRead, 
-        bool _CO2OffsetServiceDown  
+        string _lastSmartMeterReadFileHash
     ) 
         external
         isInitialized
     {
-        saveSmartMeterReadInternal(_assetId, _newMeterRead, _smartMeterDown, _lastSmartMeterReadFileHash, _CO2OffsetMeterRead, _CO2OffsetServiceDown, true);
+        saveSmartMeterReadInternal(_assetId, _newMeterRead, _lastSmartMeterReadFileHash, true);
     }
    
-   
-    /// @notice Gets the information of an asset
-    /// @param _assetId The id belonging to an entry in the asset registry
-    /// @return The information of an asset as seperate fields
-    function getAsset(uint _assetId) external view returns (        
-        uint _certificatesUsedForWh,
-        address _smartMeter,
-        address _owner,
-        uint _lastSmartMeterReadWh,
-        bool _active,
-        string _lastSmartMeterReadFileHash,
-        address[] _matcher,
-        uint _certificatesCreatedForWh,
-        uint _lastSmartMeterCO2OffsetRead,
-        uint _maxOwnerChanges,
-        string _propertiesDocumentHash,
-        string _url        )
-    {
-        AssetProducingRegistryDB.Asset memory asset = AssetProducingRegistryDB(db).getAsset(_assetId);
-        _certificatesUsedForWh = asset.certificatesUsedForWh;
-        _smartMeter = asset.smartMeter;
-        _owner = asset.owner;
-        _lastSmartMeterReadWh = asset.lastSmartMeterReadWh;
-        _active = asset.active;
-        _lastSmartMeterReadFileHash = asset.lastSmartMeterReadFileHash;
-        _matcher = asset.matcher;
-        _certificatesCreatedForWh = asset.certificatesCreatedForWh;
-        _lastSmartMeterCO2OffsetRead = asset.lastSmartMeterCO2OffsetRead;
-        _maxOwnerChanges = asset.maxOwnerChanges;
-        _propertiesDocumentHash = asset.propertiesDocumentHash;
-        _url = asset.url;
-    }
-
-    /// @notice Gets the full asset as struct
-    /// @param _assetId The id belonging to an entry in the asset registry
-    /// @return The struct of the asset
-    function getFullAsset(uint _assetId) external view returns (AssetProducingRegistryDB.Asset){
-        return AssetProducingRegistryDB((db)).getAsset(_assetId);
-    }
-
     /// @notice Gets the last filehash 
     /// @param _assetId The id belonging to an entry in the asset registry
     /// @return The last smartmeterread-filehash
     function getLastSmartMeterReadFileHash(uint _assetId) external view returns (string){
-        return AssetProducingRegistryDB((db)).getAsset(_assetId).lastSmartMeterReadFileHash;
+      //  return AssetProducingRegistryDB((db)).getAsset(_assetId).lastSmartMeterReadFileHash;
     }
 
+    function checkMatcherAmount(address[] _matcher) internal view {
+        require(_matcher.length <= AssetContractLookup(owner).maxMatcherPerAsset(),"addMatcher: too many matcher already");
+
+    } 
+
+    function checkRoles(address _owner) internal view {
+        require (isRole(RoleManagement.Role.AssetManager, _owner),"user does not have the required role"); 
+        require (isRole(RoleManagement.Role.AssetAdmin, msg.sender),"user does not have the required role"); 
+    }
+
+    function checkBeforeCreation(address[] _matcher, address _owner, address _smartMeter) internal view {
+        require(_matcher.length <= AssetContractLookup(owner).maxMatcherPerAsset(),"addMatcher: too many matcher already");
+        require (isRole(RoleManagement.Role.AssetManager, _owner),"user does not have the required role"); 
+        require (isRole(RoleManagement.Role.AssetAdmin, msg.sender),"user does not have the required role"); 
+        require(!checkAssetExist(_smartMeter));
+    }
+
+    function createAsset(  
+        address _smartMeter,
+        address _owner,
+        bool _active,
+        address[] _matcher,
+        string _propertiesDocumentHash,
+        string _url,
+        uint _numOwnerChanges
+    ) 
+        external 
+    {
+        checkBeforeCreation(_matcher, _owner, _smartMeter);
+
+        AssetGeneral memory a = AssetGeneral({
+            smartMeter: _smartMeter,
+            owner: _owner,
+            lastSmartMeterReadWh: 0,
+            active: true,
+            lastSmartMeterReadFileHash: "",
+            matcher: _matcher,
+            propertiesDocumentHash: _propertiesDocumentHash,
+            url: _url,
+            marketLookupContract: 0x0
+        });
+
+        AssetProducingDB.Asset memory _asset = AssetProducingDB.Asset(
+            {assetGeneral: a,
+            maxOwnerChanges: _numOwnerChanges
+            }
+        );
+
+        uint assetId =  AssetProducingDB(db).addFullAsset(_asset);
+
+        emit LogAssetCreated(msg.sender, assetId);
+        
+    }
+
+    /// @notice Gets an asset
+    /// @param _assetId The id belonging to an entry in the asset registry
+    /// @return Full informations of an asset
+    function getAssetById(uint _assetId) 
+        external
+        view
+        returns (
+            AssetProducingDB.Asset
+        )
+    {        
+        return AssetProducingDB(db).getAssetById(_assetId);
+    }
+
+    function getAssetBySmartMeter(address _smartMeter) 
+        external 
+        view 
+        returns (  
+            AssetProducingDB.Asset
+        )
+    {
+        return AssetProducingDB(db).getAssetBySmartMeter(_smartMeter);
+    }
+
+    function checkAssetExist(address _smartMeter) public view returns (bool){
+        return checkAssetGeneralExistingStatus(AssetProducingDB(db).getAssetBySmartMeter(_smartMeter).assetGeneral);
+    }
 }

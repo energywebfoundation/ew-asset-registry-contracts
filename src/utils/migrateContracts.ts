@@ -29,10 +29,11 @@ export async function migrateAssetRegistryContracts(web3: Web3Type, userContract
         );
 
         const assetConsumingDBWeb3 = await sloffle.deploy(
-            path.resolve(__dirname, '../../contracts/AssetConsumingRegistryDB.json'),
+            path.resolve(__dirname, '../../contracts/AssetConsumingDB.json'),
             [assetConsumingLogicWeb3._address],
             { privateKey: privateKeyDeployment },
         );
+        console.log('consumingDB: ' + assetConsumingDBWeb3._address);
 
         const assetProducingLogicWeb3 = await sloffle.deploy(
             path.resolve(__dirname, '../../contracts/AssetProducingRegistryLogic.json'),
@@ -41,10 +42,12 @@ export async function migrateAssetRegistryContracts(web3: Web3Type, userContract
         );
 
         const assetProducingDBWeb3 = await sloffle.deploy(
-            path.resolve(__dirname, '../../contracts/AssetProducingRegistryDB.json'),
+            path.resolve(__dirname, '../../contracts/AssetProducingDB.json'),
             [assetProducingLogicWeb3._address],
             { privateKey: privateKeyDeployment },
         );
+
+        console.log('producingDB: ' + assetProducingDBWeb3._address);
 
         const assetContractLookup: AssetContractLookup =
             new AssetContractLookup((web3 as any), assetContractLookupWeb3._address);

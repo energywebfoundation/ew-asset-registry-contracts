@@ -23,8 +23,10 @@ import { migrateAssetRegistryContracts } from '../utils/migrateContracts';
 import { AssetContractLookup } from '../wrappedContracts/AssetContractLookup';
 import { AssetProducingRegistryLogic } from '../wrappedContracts/AssetProducingRegistryLogic';
 import { AssetConsumingRegistryLogic } from '../wrappedContracts/AssetConsumingRegistryLogic';
-import { AssetProducingRegistryDB } from '../wrappedContracts/AssetProducingRegistryDB';
-import { AssetConsumingRegistryDB } from '../wrappedContracts/AssetConsumingRegistryDB';
+import { AssetConsumingDB } from '../wrappedContracts/AssetConsumingDB';
+import { AssetProducingDB } from '../wrappedContracts/AssetProducingDB';
+import { isRegExp } from 'util';
+import { getClientVersion } from 'sloffle';
 
 describe('AssetConsumingLogic', () => {
 
@@ -43,8 +45,8 @@ describe('AssetConsumingLogic', () => {
     let assetContractLookup: AssetContractLookup;
     let assetProducingLogic: AssetProducingRegistryLogic;
     let assetConsumingLogic: AssetConsumingRegistryLogic;
-    let assetProducingDB: AssetProducingRegistryDB;
-    let assetConsumingDB: AssetConsumingRegistryDB;
+    let assetProducingDB: AssetProducingDB;
+    let assetConsumingDB: AssetConsumingDB;
 
     const assetOwnerPK = '0xfaab95e72c3ac39f7c060125d9eca3558758bb248d1a4cdc9c1b7fd3f91a4485';
     const assetOwnerAddress = web3.eth.accounts.privateKeyToAccount(assetOwnerPK).address;
@@ -55,7 +57,14 @@ describe('AssetConsumingLogic', () => {
     const matcherPK = '0xc118b0425221384fe0cbbd093b2a81b1b65d0330810e0792c7059e518cea5383';
     const matcher = web3.eth.accounts.privateKeyToAccount(matcherPK).address;
 
+    const assetSmartmeter2PK = '0x554f3c1470e9f66ed2cf1dc260d2f4de77a816af2883679b1dc68c551e8fa5ed';
+    const assetSmartMeter2 = web3.eth.accounts.privateKeyToAccount(assetSmartmeter2PK).address;
+
+    let isGanache: boolean;
+
     it('should deploy the contracts', async () => {
+
+        isGanache = (await getClientVersion(web3)).includes('EthereumJS');
 
         const userContracts = await migrateUserRegistryContracts(web3);
 
@@ -74,8 +83,8 @@ describe('AssetConsumingLogic', () => {
         assetContractLookup = new AssetContractLookup((web3 as any));
         assetProducingLogic = new AssetProducingRegistryLogic((web3 as any));
         assetConsumingLogic = new AssetConsumingRegistryLogic((web3 as any));
-        assetProducingDB = new AssetProducingRegistryDB((web3 as any));
-        assetConsumingDB = new AssetConsumingRegistryDB((web3 as any));
+        assetProducingDB = new AssetProducingDB((web3 as any));
+        assetConsumingDB = new AssetConsumingDB((web3 as any));
 
         Object.keys(deployedContracts).forEach(async (key) => {
 
@@ -102,7 +111,7 @@ describe('AssetConsumingLogic', () => {
 
     });
 
-    it('should have the right userContractLookup', async () => {
+    it('should have the right db', async () => {
 
         assert.equal(await assetConsumingLogic.db(), assetConsumingDB.web3Contract._address);
 
@@ -118,7 +127,7 @@ describe('AssetConsumingLogic', () => {
 
         let failed = false;
         try {
-            await assetConsumingLogic.createAssetStruct(
+            await assetConsumingLogic.createAsset(
                 assetSmartmeter,
                 assetOwnerAddress,
                 true,
@@ -128,6 +137,8 @@ describe('AssetConsumingLogic', () => {
                 { privateKey: privateKeyDeployment });
         }
         catch (ex) {
+            if (isGanache) assert.include(ex.message, 'revert user does not have the required role');
+
             failed = true;
         }
         assert.isTrue(failed);
@@ -137,7 +148,7 @@ describe('AssetConsumingLogic', () => {
 
         let failed = false;
         try {
-            await assetConsumingLogic.createAssetStruct(
+            await assetConsumingLogic.createAsset(
                 assetSmartmeter,
                 assetOwnerAddress,
                 true,
@@ -147,6 +158,7 @@ describe('AssetConsumingLogic', () => {
                 { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
         }
         catch (ex) {
+            if (isGanache) assert.include(ex.message, 'revert user does not have the required role');
             failed = true;
         }
         assert.isTrue(failed);
@@ -165,7 +177,7 @@ describe('AssetConsumingLogic', () => {
 
         let failed = false;
         try {
-            await assetConsumingLogic.createAssetStruct(
+            await assetConsumingLogic.createAsset(
                 assetSmartmeter,
                 assetOwnerAddress,
                 true,
@@ -175,13 +187,35 @@ describe('AssetConsumingLogic', () => {
                 { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
         }
         catch (ex) {
+            if (isGanache) assert.include(ex.message, 'revert user does not have the required role');
             failed = true;
         }
         assert.isTrue(failed);
     });
 
+    it('should return empty asset', async () => {
+        const emptyAsset = await assetConsumingLogic.getAssetBySmartMeter(assetSmartmeter);
+
+        // all the properties are in 1 struct
+        assert.equal(emptyAsset.length, 1);
+        // checking the number of properties in assetGeneral
+        assert.equal(emptyAsset.assetGeneral.length, 9);
+
+        const ag = emptyAsset.assetGeneral;
+
+        assert.equal(ag.smartMeter, '0x0000000000000000000000000000000000000000');
+        assert.equal(ag.owner, '0x0000000000000000000000000000000000000000');
+        assert.equal(ag.lastSmartMeterReadWh, 0);
+        assert.isFalse(ag.active);
+        assert.equal(ag.lastSmartMeterReadFileHash, '');
+        assert.deepEqual(ag.matcher, []);
+        assert.equal(ag.propertiesDocumentHash, '');
+        assert.equal(ag.url, '');
+        assert.equal(ag.marketLookupContract, '0x0000000000000000000000000000000000000000');
+    });
+
     it('should onboard a new asset', async () => {
-        const tx = await assetConsumingLogic.createAssetStruct(
+        const tx = await assetConsumingLogic.createAsset(
             assetSmartmeter,
             assetOwnerAddress,
             true,
@@ -203,39 +237,75 @@ describe('AssetConsumingLogic', () => {
 
     });
 
+    it('should fail when trying to onboard a new asset with same smartmeter', async () => {
+
+        let failed = false;
+
+        try {
+            await assetConsumingLogic.createAsset(
+                assetSmartmeter,
+                assetOwnerAddress,
+                true,
+                ([matcher] as any),
+                'propertiesDocumentHash',
+                'urlString',
+                { privateKey: privateKeyDeployment });
+        } catch (ex) {
+            if (isGanache) assert.include(ex.message, ' revert smartmeter does already exist');
+            failed = true;
+        }
+
+        assert.isTrue(failed);
+
+    });
+
     it('should have 1 asset in the list', async () => {
 
         assert.equal(await assetConsumingLogic.getAssetListLength(), 1);
 
     });
 
+    it('should return asset by smartmeter', async () => {
+        const deployedAsset = await assetConsumingLogic.getAssetBySmartMeter(assetSmartmeter);
+
+        // all the properties are in 1 struct
+        assert.equal(deployedAsset.length, 1);
+        // checking the number of properties in assetGeneral
+        assert.equal(deployedAsset.assetGeneral.length, 9);
+
+        const ag = deployedAsset.assetGeneral;
+
+        assert.equal(ag.smartMeter, assetSmartmeter);
+        assert.equal(ag.owner, assetOwnerAddress);
+        assert.equal(ag.lastSmartMeterReadWh, 0);
+        assert.isTrue(ag.active);
+        assert.equal(ag.lastSmartMeterReadFileHash, '');
+        assert.deepEqual(ag.matcher, [matcher]);
+        assert.equal(ag.propertiesDocumentHash, 'propertiesDocumentHash');
+        assert.equal(ag.url, 'urlString');
+        assert.equal(ag.marketLookupContract, '0x0000000000000000000000000000000000000000');
+    });
+
     it('should return the deployed asset correctly', async () => {
 
-        const deployedAsset = await assetConsumingLogic.getAsset(0);
+        const deployedAsset = await assetConsumingLogic.getAssetById(0);
 
-        deployedAsset._owner = deployedAsset._owner.toLowerCase();
-        deployedAsset[1] = deployedAsset[1].toLowerCase();
+        // all the properties are in 1 struct
+        assert.equal(deployedAsset.length, 1);
+        // checking the number of properties in assetGeneral
+        assert.equal(deployedAsset.assetGeneral.length, 9);
 
-        assert.deepEqual(deployedAsset, {
-            0: assetSmartmeter,
-            1: assetOwnerAddress.toLowerCase(),
-            2: '0',
-            3: '0',
-            4: true,
-            5: '',
-            6: 'propertiesDocumentHash',
-            7: 'urlString',
-            8: [matcher],
-            _smartMeter: assetSmartmeter,
-            _owner: assetOwnerAddress.toLowerCase(),
-            _lastSmartMeterReadWh: '0',
-            _certificatesUsedForWh: '0',
-            _active: true,
-            _lastSmartMeterReadFileHash: '',
-            _propertiesDocumentHash: 'propertiesDocumentHash',
-            _url: 'urlString',
-            _matcher: [matcher],
-        });
+        const ag = deployedAsset.assetGeneral;
+
+        assert.equal(ag.smartMeter, assetSmartmeter);
+        assert.equal(ag.owner, assetOwnerAddress);
+        assert.equal(ag.lastSmartMeterReadWh, 0);
+        assert.isTrue(ag.active);
+        assert.equal(ag.lastSmartMeterReadFileHash, '');
+        assert.deepEqual(ag.matcher, [matcher]);
+        assert.equal(ag.propertiesDocumentHash, 'propertiesDocumentHash');
+        assert.equal(ag.url, 'urlString');
+        assert.equal(ag.marketLookupContract, '0x0000000000000000000000000000000000000000');
 
     });
 
@@ -251,6 +321,8 @@ describe('AssetConsumingLogic', () => {
                 false,
                 { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
         } catch (ex) {
+            if (isGanache) assert.include(ex.message, 'revert saveSmartMeterRead: wrong sender');
+
             failed = true;
         }
 
@@ -269,22 +341,106 @@ describe('AssetConsumingLogic', () => {
         const event = (await assetConsumingLogic.getAllLogNewMeterReadEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
 
         assert.equal(event.event, 'LogNewMeterRead');
+
         assert.deepEqual(event.returnValues, {
             0: '0',
             1: '0',
             2: '100',
-            3: '0',
-            4: false,
             _assetId: '0',
             _oldMeterRead: '0',
             _newMeterRead: '100',
-            _certificatesUsedForWh: '0',
-            _smartMeterDown: false,
         });
 
     });
 
-    it.skip('should call setConsumptionForPeriode', async () => {
+    it('should return the updated asset correctly', async () => {
+
+        const deployedAsset = await assetConsumingLogic.getAssetById(0);
+
+        // all the properties are in 1 struct
+        assert.equal(deployedAsset.length, 1);
+        // checking the number of properties in assetGeneral
+        assert.equal(deployedAsset.assetGeneral.length, 9);
+
+        const ag = deployedAsset.assetGeneral;
+
+        assert.equal(ag.smartMeter, assetSmartmeter);
+        assert.equal(ag.owner, assetOwnerAddress);
+        assert.equal(ag.lastSmartMeterReadWh, 100);
+        assert.isTrue(ag.active);
+        assert.equal(ag.lastSmartMeterReadFileHash, 'newMeterReadFileHash');
+        assert.deepEqual(ag.matcher, [matcher]);
+        assert.equal(ag.propertiesDocumentHash, 'propertiesDocumentHash');
+        assert.equal(ag.url, 'urlString');
+        assert.equal(ag.marketLookupContract, '0x0000000000000000000000000000000000000000');
+
+    });
+
+    it('should fail when trying to log with a too low new meterreading', async () => {
+
+        let failed = false;
+
+        try {
+            const tx = await assetConsumingLogic.saveSmartMeterRead(
+                0,
+                100,
+                'newMeterReadFileHash',
+                false,
+                { privateKey: assetSmartmeterPK });
+        }
+        catch (ex) {
+            if (isGanache) assert.include(ex.message, 'revert saveSmartMeterRead: meterread too low');
+
+            failed = true;
+        }
+
+        assert.isTrue(failed);
+
+    });
+
+    it('should log with a new meterreading', async () => {
+
+        const tx = await assetConsumingLogic.saveSmartMeterRead(
+            0,
+            200,
+            'newMeterReadFileHash',
+            false,
+            { privateKey: assetSmartmeterPK });
+
+        const event = (await assetConsumingLogic.getAllLogNewMeterReadEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
+        assert.equal(event.event, 'LogNewMeterRead');
+
+        assert.deepEqual(event.returnValues, {
+            0: '0',
+            1: '100',
+            2: '200',
+            _assetId: '0',
+            _oldMeterRead: '100',
+            _newMeterRead: '200',
+        });
+
+    });
+
+    it('should return the updated asset correctly', async () => {
+
+        const deployedAsset = await assetConsumingLogic.getAssetById(0);
+
+        // all the properties are in 1 struct
+        assert.equal(deployedAsset.length, 1);
+        // checking the number of properties in assetGeneral
+        assert.equal(deployedAsset.assetGeneral.length, 9);
+
+        const ag = deployedAsset.assetGeneral;
+
+        assert.equal(ag.smartMeter, assetSmartmeter);
+        assert.equal(ag.owner, assetOwnerAddress);
+        assert.equal(ag.lastSmartMeterReadWh, 200);
+        assert.isTrue(ag.active);
+        assert.equal(ag.lastSmartMeterReadFileHash, 'newMeterReadFileHash');
+        assert.deepEqual(ag.matcher, [matcher]);
+        assert.equal(ag.propertiesDocumentHash, 'propertiesDocumentHash');
+        assert.equal(ag.url, 'urlString');
+        assert.equal(ag.marketLookupContract, '0x0000000000000000000000000000000000000000');
 
     });
 
@@ -302,6 +458,8 @@ describe('AssetConsumingLogic', () => {
             await assetConsumingLogic.setMarketLookupContract(0, '0x1000000000000000000000000000000000000005',
                                                               { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
         } catch (ex) {
+            if (isGanache) assert.include(ex.message, 'revert sender is not the assetOwner');
+
             failed = true;
         }
 
@@ -316,6 +474,8 @@ describe('AssetConsumingLogic', () => {
             await assetConsumingLogic.setMarketLookupContract(0, '0x1000000000000000000000000000000000000005',
                                                               { privateKey: matcherPK });
         } catch (ex) {
+            if (isGanache) assert.include(ex.message, 'revert sender is not the assetOwner');
+
             failed = true;
         }
 
@@ -330,6 +490,8 @@ describe('AssetConsumingLogic', () => {
             await assetConsumingLogic.setMarketLookupContract(0, '0x1000000000000000000000000000000000000005',
                                                               { privateKey: privateKeyDeployment });
         } catch (ex) {
+            if (isGanache) assert.include(ex.message, 'revert sender is not the assetOwner');
+
             failed = true;
         }
 
@@ -345,6 +507,29 @@ describe('AssetConsumingLogic', () => {
 
     });
 
+    it('should return the updated asset correctly', async () => {
+
+        const deployedAsset = await assetConsumingLogic.getAssetById(0);
+
+        // all the properties are in 1 struct
+        assert.equal(deployedAsset.length, 1);
+        // checking the number of properties in assetGeneral
+        assert.equal(deployedAsset.assetGeneral.length, 9);
+
+        const ag = deployedAsset.assetGeneral;
+
+        assert.equal(ag.smartMeter, assetSmartmeter);
+        assert.equal(ag.owner, assetOwnerAddress);
+        assert.equal(ag.lastSmartMeterReadWh, 200);
+        assert.isTrue(ag.active);
+        assert.equal(ag.lastSmartMeterReadFileHash, 'newMeterReadFileHash');
+        assert.deepEqual(ag.matcher, [matcher]);
+        assert.equal(ag.propertiesDocumentHash, 'propertiesDocumentHash');
+        assert.equal(ag.url, 'urlString');
+        assert.equal(ag.marketLookupContract, '0x1000000000000000000000000000000000000005');
+
+    });
+
     it('should not add a matcher as admin', async () => {
 
         let failed = false;
@@ -355,6 +540,8 @@ describe('AssetConsumingLogic', () => {
                 '0x1000000000000000000000000000000000000000',
                 { privateKey: privateKeyDeployment });
         } catch (ex) {
+            if (isGanache) assert.include(ex.message, 'revert addMatcher: not the owner');
+
             failed = true;
         }
 
@@ -371,6 +558,8 @@ describe('AssetConsumingLogic', () => {
                 '0x1000000000000000000000000000000000000000',
                 { privateKey: matcherPK });
         } catch (ex) {
+            if (isGanache) assert.include(ex.message, 'revert addMatcher: not the owner');
+
             failed = true;
         }
 
@@ -384,20 +573,30 @@ describe('AssetConsumingLogic', () => {
             '0x1000000000000000000000000000000000000000',
             { privateKey: assetOwnerPK });
         const matcherArray = (await assetConsumingLogic.getMatcher(0));
-
         assert.deepEqual(matcherArray, [matcher, '0x1000000000000000000000000000000000000000']);
 
     });
 
-    it('should not add the same a matcher', async () => {
+    it('should return the updated asset correctly', async () => {
 
-        await assetConsumingLogic.addMatcher(
-            0,
-            '0x1000000000000000000000000000000000000000',
-            { privateKey: assetOwnerPK });
-        const matcherArray = (await assetConsumingLogic.getMatcher(0));
+        const deployedAsset = await assetConsumingLogic.getAssetById(0);
 
-        assert.deepEqual(matcherArray, [matcher, '0x1000000000000000000000000000000000000000']);
+        // all the properties are in 1 struct
+        assert.equal(deployedAsset.length, 1);
+        // checking the number of properties in assetGeneral
+        assert.equal(deployedAsset.assetGeneral.length, 9);
+
+        const ag = deployedAsset.assetGeneral;
+
+        assert.equal(ag.smartMeter, assetSmartmeter);
+        assert.equal(ag.owner, assetOwnerAddress);
+        assert.equal(ag.lastSmartMeterReadWh, 200);
+        assert.isTrue(ag.active);
+        assert.equal(ag.lastSmartMeterReadFileHash, 'newMeterReadFileHash');
+        assert.deepEqual(ag.matcher, [matcher, '0x1000000000000000000000000000000000000000']);
+        assert.equal(ag.propertiesDocumentHash, 'propertiesDocumentHash');
+        assert.equal(ag.url, 'urlString');
+        assert.equal(ag.marketLookupContract, '0x1000000000000000000000000000000000000005');
 
     });
 
@@ -411,6 +610,8 @@ describe('AssetConsumingLogic', () => {
                 matcher,
                 { privateKey: privateKeyDeployment });
         } catch (ex) {
+            if (isGanache) assert.include(ex.message, 'revert removeMatcher: not the owner');
+
             failed = true;
         }
 
@@ -427,6 +628,8 @@ describe('AssetConsumingLogic', () => {
                 matcher,
                 { privateKey: matcherPK });
         } catch (ex) {
+            if (isGanache) assert.include(ex.message, 'revert removeMatcher: not the owner');
+
             failed = true;
         }
 
@@ -445,15 +648,75 @@ describe('AssetConsumingLogic', () => {
 
     });
 
+    it('should return the updated asset correctly', async () => {
+
+        const deployedAsset = await assetConsumingLogic.getAssetById(0);
+
+        // all the properties are in 1 struct
+        assert.equal(deployedAsset.length, 1);
+        // checking the number of properties in assetGeneral
+        assert.equal(deployedAsset.assetGeneral.length, 9);
+
+        const ag = deployedAsset.assetGeneral;
+
+        assert.equal(ag.smartMeter, assetSmartmeter);
+        assert.equal(ag.owner, assetOwnerAddress);
+        assert.equal(ag.lastSmartMeterReadWh, 200);
+        assert.isTrue(ag.active);
+        assert.equal(ag.lastSmartMeterReadFileHash, 'newMeterReadFileHash');
+        assert.deepEqual(ag.matcher, ['0x1000000000000000000000000000000000000000']);
+        assert.equal(ag.propertiesDocumentHash, 'propertiesDocumentHash');
+        assert.equal(ag.url, 'urlString');
+        assert.equal(ag.marketLookupContract, '0x1000000000000000000000000000000000000005');
+
+    });
+
     it('should not remove a non existing-matcher', async () => {
+
+        let failed = false;
+        try {
+            await assetConsumingLogic.removeMatcher(
+                0,
+                matcher,
+                { privateKey: assetOwnerPK });
+        } catch (ex) {
+            if (isGanache) assert.include(ex.message, 'revert removeMatcher: address not found');
+            failed = true;
+        }
+
+        assert.isTrue(failed);
+
+    });
+
+    it('should remove remaining matcher', async () => {
 
         await assetConsumingLogic.removeMatcher(
             0,
-            matcher,
+            '0x1000000000000000000000000000000000000000',
             { privateKey: assetOwnerPK });
-        const matcherArray = (await assetConsumingLogic.getMatcher(0));
 
-        assert.deepEqual(matcherArray, ['0x1000000000000000000000000000000000000000']);
+    });
+
+    it('should return the updated asset correctly', async () => {
+
+        const deployedAsset = await assetConsumingLogic.getAssetById(0);
+
+        // all the properties are in 1 struct
+        assert.equal(deployedAsset.length, 1);
+        // checking the number of properties in assetGeneral
+        assert.equal(deployedAsset.assetGeneral.length, 9);
+
+        const ag = deployedAsset.assetGeneral;
+
+        assert.equal(ag.smartMeter, assetSmartmeter);
+        assert.equal(ag.owner, assetOwnerAddress);
+        assert.equal(ag.lastSmartMeterReadWh, 200);
+        assert.isTrue(ag.active);
+        assert.equal(ag.lastSmartMeterReadFileHash, 'newMeterReadFileHash');
+        assert.deepEqual(ag.matcher, []);
+        assert.equal(ag.propertiesDocumentHash, 'propertiesDocumentHash');
+        assert.equal(ag.url, 'urlString');
+        assert.equal(ag.marketLookupContract, '0x1000000000000000000000000000000000000005');
 
     });
 
@@ -481,6 +744,39 @@ describe('AssetConsumingLogic', () => {
         );
     });
 
+    it('should return the updated asset correctly', async () => {
+
+        const deployedAsset = await assetConsumingLogic.getAssetById(0);
+
+        // all the properties are in 1 struct
+        assert.equal(deployedAsset.length, 1);
+        // checking the number of properties in assetGeneral
+        assert.equal(deployedAsset.assetGeneral.length, 9);
+
+        const ag = deployedAsset.assetGeneral;
+
+        assert.equal(ag.smartMeter, assetSmartmeter);
+        assert.equal(ag.owner, assetOwnerAddress);
+        assert.equal(ag.lastSmartMeterReadWh, 200);
+        assert.isTrue(ag.active);
+        assert.equal(ag.lastSmartMeterReadFileHash, 'newMeterReadFileHash');
+        assert.deepEqual(ag.matcher, [
+            '0x1000000000000000000000000000000000000000',
+            '0x1000000000000000000000000000000000000001',
+            '0x1000000000000000000000000000000000000002',
+            '0x1000000000000000000000000000000000000003',
+            '0x1000000000000000000000000000000000000004',
+            '0x1000000000000000000000000000000000000005',
+            '0x1000000000000000000000000000000000000006',
+            '0x1000000000000000000000000000000000000007',
+            '0x1000000000000000000000000000000000000008',
+            '0x1000000000000000000000000000000000000009']);
+        assert.equal(ag.propertiesDocumentHash, 'propertiesDocumentHash');
+        assert.equal(ag.url, 'urlString');
+        assert.equal(ag.marketLookupContract, '0x1000000000000000000000000000000000000005');
+
+    });
+
     it('should not add a 10th matcher', async () => {
 
         let failed = false;
@@ -490,6 +786,8 @@ describe('AssetConsumingLogic', () => {
                 '0x1000000000000000000000000000000000000010',
                 { privateKey: assetOwnerPK });
         } catch (ex) {
+            if (isGanache) assert.include(ex.message, 'revert addMatcher: too many matcher already');
+
             failed = true;
         }
 
@@ -515,7 +813,7 @@ describe('AssetConsumingLogic', () => {
 
         let failed = false;
         try {
-            await assetConsumingLogic.createAssetStruct(
+            await assetConsumingLogic.createAsset(
                 assetSmartmeter,
                 assetOwnerAddress,
                 true,
@@ -537,14 +835,16 @@ describe('AssetConsumingLogic', () => {
         }
         catch (ex) {
             failed = true;
+            if (isGanache) assert.include(ex.message, 'revert addMatcher: too many matcher already');
+
         }
         assert.isTrue(failed);
     });
 
     it('should onboard assets with 10 matcher', async () => {
 
-        await assetConsumingLogic.createAssetStruct(
-            assetSmartmeter,
+        const tx = await assetConsumingLogic.createAsset(
+            assetSmartMeter2,
             assetOwnerAddress,
             true,
             ([
@@ -558,52 +858,41 @@ describe('AssetConsumingLogic', () => {
                 '0x1000000000000000000000000000000000000007',
                 '0x1000000000000000000000000000000000000008',
                 '0x1000000000000000000000000000000000000009'] as any),
-            'propertiesDocumentHash',
-            'urlString',
+            'propertiesDocumentHash#2',
+            'urlString#2',
             { privateKey: privateKeyDeployment });
 
-        assert.deepEqual(await assetConsumingLogic.getAsset(1), {
-            0: assetSmartmeter,
-            1: assetOwnerAddress,
-            2: '0',
-            3: '0',
-            4: true,
-            5: '',
-            6: 'propertiesDocumentHash',
-            7: 'urlString',
-            8:
-                ['0x1000000000000000000000000000000000000000',
-                    '0x1000000000000000000000000000000000000001',
-                    '0x1000000000000000000000000000000000000002',
-                    '0x1000000000000000000000000000000000000003',
-                    '0x1000000000000000000000000000000000000004',
-                    '0x1000000000000000000000000000000000000005',
-                    '0x1000000000000000000000000000000000000006',
-                    '0x1000000000000000000000000000000000000007',
-                    '0x1000000000000000000000000000000000000008',
-                    '0x1000000000000000000000000000000000000009'],
-            _smartMeter: assetSmartmeter,
-            _owner: assetOwnerAddress,
-            _lastSmartMeterReadWh: '0',
-            _certificatesUsedForWh: '0',
-            _active: true,
-            _lastSmartMeterReadFileHash: '',
-            _propertiesDocumentHash: 'propertiesDocumentHash',
-            _url: 'urlString',
-            _matcher:
-                ['0x1000000000000000000000000000000000000000',
-                    '0x1000000000000000000000000000000000000001',
-                    '0x1000000000000000000000000000000000000002',
-                    '0x1000000000000000000000000000000000000003',
-                    '0x1000000000000000000000000000000000000004',
-                    '0x1000000000000000000000000000000000000005',
-                    '0x1000000000000000000000000000000000000006',
-                    '0x1000000000000000000000000000000000000007',
-                    '0x1000000000000000000000000000000000000008',
-                    '0x1000000000000000000000000000000000000009'],
+        const event = (await assetConsumingLogic.getAllLogAssetCreatedEvents(
+            { fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
+
+        assert.equal(event.event, 'LogAssetCreated');
+        assert.deepEqual(event.returnValues, {
+            0: accountDeployment,
+            1: '1',
+            _sender: accountDeployment,
+            _assetId: '1',
         });
 
-        assert.deepEqual(await assetConsumingLogic.getMatcher(1), ['0x1000000000000000000000000000000000000000',
+    });
+
+    it('should return the updated asset correctly', async () => {
+
+        const deployedAsset = await assetConsumingLogic.getAssetById(1);
+
+        // all the properties are in 1 struct
+        assert.equal(deployedAsset.length, 1);
+        // checking the number of properties in assetGeneral
+        assert.equal(deployedAsset.assetGeneral.length, 9);
+
+        const ag = deployedAsset.assetGeneral;
+
+        assert.equal(ag.smartMeter, assetSmartMeter2);
+        assert.equal(ag.owner, assetOwnerAddress);
+        assert.equal(ag.lastSmartMeterReadWh, 0);
+        assert.isTrue(ag.active);
+        assert.equal(ag.lastSmartMeterReadFileHash, '');
+        assert.deepEqual(ag.matcher, [
+            '0x1000000000000000000000000000000000000000',
             '0x1000000000000000000000000000000000000001',
             '0x1000000000000000000000000000000000000002',
             '0x1000000000000000000000000000000000000003',
@@ -613,5 +902,9 @@ describe('AssetConsumingLogic', () => {
             '0x1000000000000000000000000000000000000007',
             '0x1000000000000000000000000000000000000008',
             '0x1000000000000000000000000000000000000009']);
+        assert.equal(ag.propertiesDocumentHash, 'propertiesDocumentHash#2');
+        assert.equal(ag.url, 'urlString#2');
+        assert.equal(ag.marketLookupContract, '0x0000000000000000000000000000000000000000');
+
     });
 });

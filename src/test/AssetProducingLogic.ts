@@ -22,10 +22,10 @@ import { UserContractLookup, UserLogic, migrateUserRegistryContracts } from 'ew-
 import { migrateAssetRegistryContracts } from '../utils/migrateContracts';
 import { AssetContractLookup } from '../wrappedContracts/AssetContractLookup';
 import { AssetConsumingRegistryLogic } from '../wrappedContracts/AssetConsumingRegistryLogic';
-import { AssetProducingRegistryDB } from '../wrappedContracts/AssetProducingRegistryDB';
-import { AssetConsumingRegistryDB } from '../wrappedContracts/AssetConsumingRegistryDB';
 import { getClientVersion } from 'sloffle';
 import { AssetProducingRegistryLogic } from '../wrappedContracts/AssetProducingRegistryLogic';
+import { AssetConsumingDB } from '../wrappedContracts/AssetConsumingDB';
+import { AssetProducingDB } from '../wrappedContracts/AssetProducingDB';
 
 describe('AssetProducingLogic', () => {
 
@@ -44,8 +44,8 @@ describe('AssetProducingLogic', () => {
     let assetContractLookup: AssetContractLookup;
     let assetProducingLogic: AssetProducingRegistryLogic;
     let assetConsumingLogic: AssetConsumingRegistryLogic;
-    let assetProducingDB: AssetProducingRegistryDB;
-    let assetConsumingDB: AssetConsumingRegistryDB;
+    let assetProducingDB: AssetProducingDB;
+    let assetConsumingDB: AssetConsumingDB;
 
     const assetOwnerPK = '0xfaab95e72c3ac39f7c060125d9eca3558758bb248d1a4cdc9c1b7fd3f91a4485';
     const assetOwnerAddress = web3.eth.accounts.privateKeyToAccount(assetOwnerPK).address;
@@ -55,6 +55,9 @@ describe('AssetProducingLogic', () => {
 
     const matcherPK = '0xc118b0425221384fe0cbbd093b2a81b1b65d0330810e0792c7059e518cea5383';
     const matcher = web3.eth.accounts.privateKeyToAccount(matcherPK).address;
+
+    const assetSmartmeter2PK = '0x554f3c1470e9f66ed2cf1dc260d2f4de77a816af2883679b1dc68c551e8fa5ed';
+    const assetSmartMeter2 = web3.eth.accounts.privateKeyToAccount(assetSmartmeter2PK).address;
 
     let isGanache: boolean;
 
@@ -80,8 +83,8 @@ describe('AssetProducingLogic', () => {
         assetContractLookup = new AssetContractLookup((web3 as any));
         assetProducingLogic = new AssetProducingRegistryLogic((web3 as any));
         assetConsumingLogic = new AssetConsumingRegistryLogic((web3 as any));
-        assetProducingDB = new AssetProducingRegistryDB((web3 as any));
-        assetConsumingDB = new AssetConsumingRegistryDB((web3 as any));
+        assetProducingDB = new AssetProducingDB((web3 as any));
+        assetConsumingDB = new AssetConsumingDB((web3 as any));
 
         Object.keys(deployedContracts).forEach(async (key) => {
 
@@ -124,14 +127,15 @@ describe('AssetProducingLogic', () => {
 
         let failed = false;
         try {
-            await assetProducingLogic.createAssetStruct(
+
+            await assetProducingLogic.createAsset(
                 assetSmartmeter,
                 assetOwnerAddress,
-                2,
                 true,
                 ([matcher] as any),
                 'propertiesDocumentHash',
                 'url',
+                2,
                 {
                     privateKey: assetOwnerPK,
                 },
@@ -152,14 +156,14 @@ describe('AssetProducingLogic', () => {
 
         let failed = false;
         try {
-            await assetProducingLogic.createAssetStruct(
+            await assetProducingLogic.createAsset(
                 assetSmartmeter,
                 assetOwnerAddress,
-                2,
                 true,
                 ([matcher] as any),
                 'propertiesDocumentHash',
                 'url',
+                2,
                 { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
         }
         catch (ex) {
@@ -184,14 +188,14 @@ describe('AssetProducingLogic', () => {
 
         let failed = false;
         try {
-            await assetProducingLogic.createAssetStruct(
+            await assetProducingLogic.createAsset(
                 assetSmartmeter,
                 assetOwnerAddress,
-                2,
                 true,
                 ([matcher] as any),
                 'propertiesDocumentHash',
                 'url',
+                2,
                 { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
         }
         catch (ex) {
@@ -203,21 +207,43 @@ describe('AssetProducingLogic', () => {
         assert.isTrue(failed);
     });
 
+    it('should return empty asset when smart meter is not onboarded yet', async () => {
+        const deployedAsset = await assetProducingLogic.getAssetBySmartMeter(assetSmartmeter);
+
+        // all the properties are in 1 struct
+        assert.equal(deployedAsset.length, 2);
+        // checking the number of properties in assetGeneral
+        assert.equal(deployedAsset.assetGeneral.length, 9);
+
+        const ag = deployedAsset.assetGeneral;
+
+        assert.equal(ag.smartMeter, '0x0000000000000000000000000000000000000000');
+        assert.equal(ag.owner, '0x0000000000000000000000000000000000000000');
+        assert.equal(ag.lastSmartMeterReadWh, 0);
+        assert.isFalse(ag.active);
+        assert.equal(ag.lastSmartMeterReadFileHash, '');
+        assert.deepEqual(ag.matcher, []);
+        assert.equal(ag.propertiesDocumentHash, '');
+        assert.equal(ag.url, '');
+        assert.equal(ag.marketLookupContract, '0x0000000000000000000000000000000000000000');
+    });
+
     it('should onboard a new asset', async () => {
-        const tx = await assetProducingLogic.createAssetStruct(
+        const tx = await assetProducingLogic.createAsset(
             assetSmartmeter,
             assetOwnerAddress,
-            2,
             true,
             ([matcher] as any),
             'propertiesDocumentHash',
             'url',
+            2,
             { privateKey: privateKeyDeployment });
 
         const event = (await assetProducingLogic.getAllLogAssetCreatedEvents(
             { fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
 
         assert.equal(event.event, 'LogAssetCreated');
+
         assert.deepEqual(event.returnValues, {
             0: accountDeployment,
             1: '0',
@@ -235,41 +261,48 @@ describe('AssetProducingLogic', () => {
 
     it('should return the deployed asset correctly', async () => {
 
-        const deployedAsset = await assetProducingLogic.getAsset(0);
+        const deployedAsset = await assetProducingLogic.getAssetById(0);
 
-        deployedAsset._owner = deployedAsset._owner.toLowerCase();
-        deployedAsset[1] = deployedAsset[1].toLowerCase();
+        // producing has 2 properties: maxOwnerChanges + assetGeneralStruct
+        assert.equal(deployedAsset.length, 2);
+        assert.equal(deployedAsset.maxOwnerChanges, 2);
 
-        deployedAsset._smartMeter = deployedAsset._smartMeter.toLowerCase();
-        deployedAsset[2] = deployedAsset[2].toLowerCase();
+        // checking the number of properties in assetGeneral
+        assert.equal(deployedAsset.assetGeneral.length, 9);
 
-        assert.deepEqual(deployedAsset, {
-            0: '0',
-            1: assetSmartmeter.toLowerCase(),
-            2: assetOwnerAddress.toLowerCase(),
-            3: '0',
-            4: true,
-            5: '',
-            6: [matcher],
-            7: '0',
-            8: '0',
-            9: '2',
-            10: 'propertiesDocumentHash',
-            11: 'url',
-            _certificatesUsedForWh: '0',
-            _smartMeter: assetSmartmeter.toLowerCase(),
-            _owner: assetOwnerAddress.toLowerCase(),
-            _lastSmartMeterReadWh: '0',
-            _active: true,
-            _lastSmartMeterReadFileHash: '',
-            _matcher: [matcher],
-            _certificatesCreatedForWh: '0',
-            _lastSmartMeterCO2OffsetRead: '0',
-            _maxOwnerChanges: '2',
-            _propertiesDocumentHash: 'propertiesDocumentHash',
-            _url: 'url',
-        });
+        const ag = deployedAsset.assetGeneral;
 
+        assert.equal(ag.smartMeter, assetSmartmeter);
+        assert.equal(ag.owner, assetOwnerAddress);
+        assert.equal(ag.lastSmartMeterReadWh, 0);
+        assert.isTrue(ag.active);
+        assert.equal(ag.lastSmartMeterReadFileHash, '');
+        assert.deepEqual(ag.matcher, [matcher]);
+        assert.equal(ag.propertiesDocumentHash, 'propertiesDocumentHash');
+        assert.equal(ag.url, 'url');
+        assert.equal(ag.marketLookupContract, '0x0000000000000000000000000000000000000000');
+    });
+
+    it('should return asset by smartmeter correctly', async () => {
+        const deployedAsset = await assetProducingLogic.getAssetBySmartMeter(assetSmartmeter);
+
+        assert.equal(deployedAsset.length, 2);
+        assert.equal(deployedAsset.maxOwnerChanges, 2);
+
+        // checking the number of properties in assetGeneral
+        assert.equal(deployedAsset.assetGeneral.length, 9);
+
+        const ag = deployedAsset.assetGeneral;
+
+        assert.equal(ag.smartMeter, assetSmartmeter);
+        assert.equal(ag.owner, assetOwnerAddress);
+        assert.equal(ag.lastSmartMeterReadWh, 0);
+        assert.isTrue(ag.active);
+        assert.equal(ag.lastSmartMeterReadFileHash, '');
+        assert.deepEqual(ag.matcher, [matcher]);
+        assert.equal(ag.propertiesDocumentHash, 'propertiesDocumentHash');
+        assert.equal(ag.url, 'url');
+        assert.equal(ag.marketLookupContract, '0x0000000000000000000000000000000000000000');
     });
 
     it('should fail when trying to log with saveSmartMeterRead using the wrong smartmeter', async () => {
@@ -280,10 +313,7 @@ describe('AssetProducingLogic', () => {
             await assetProducingLogic.saveSmartMeterRead(
                 0,
                 100,
-                false,
                 'lastSmartMeterReadFileHash',
-                100,
-                false,
                 { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
         } catch (ex) {
             failed = true;
@@ -300,32 +330,20 @@ describe('AssetProducingLogic', () => {
         const tx = await assetProducingLogic.saveSmartMeterRead(
             0,
             100,
-            false,
             'lastSmartMeterReadFileHash',
-            100,
-            false,
             { privateKey: assetSmartmeterPK });
 
         const event = (await assetProducingLogic.getAllLogNewMeterReadEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
 
         assert.equal(event.event, 'LogNewMeterRead');
+
         assert.deepEqual(event.returnValues, {
             0: '0',
             1: '0',
             2: '100',
-            3: false,
-            4: '0',
-            5: '0',
-            6: '100',
-            7: false,
             _assetId: '0',
             _oldMeterRead: '0',
             _newMeterRead: '100',
-            _smartMeterDown: false,
-            _certificatesCreatedForWh: '0',
-            _oldCO2OffsetReading: '0',
-            _newCO2OffsetReading: '100',
-            _serviceDown: false,
         });
 
     });
@@ -338,10 +356,7 @@ describe('AssetProducingLogic', () => {
             await assetProducingLogic.saveSmartMeterRead(
                 0,
                 50,
-                false,
                 'lastSmartMeterReadFileHash',
-                200,
-                false,
                 { privateKey: assetSmartmeterPK });
         } catch (ex) {
             failed = true;
@@ -353,60 +368,25 @@ describe('AssetProducingLogic', () => {
         assert.isTrue(failed);
     });
 
-    it('should fail when trying to log with saveSmartMeterRead and a too low meterreading', async () => {
-
-        let failed = false;
-
-        try {
-            await assetProducingLogic.saveSmartMeterRead(
-                0,
-                200,
-                false,
-                'lastSmartMeterReadFileHash',
-                50,
-                false,
-                { privateKey: assetSmartmeterPK });
-        } catch (ex) {
-            failed = true;
-            if (isGanache) {
-                assert.include(ex.message, 'revert saveSmartMeterRead: CO2 read too low');
-            }
-        }
-
-        assert.isTrue(failed);
-    });
-
     it('should be able to log withs aveSmartMeterRead again using the right values', async () => {
 
         const tx = await assetProducingLogic.saveSmartMeterRead(
             0,
             200,
-            false,
             'lastSmartMeterReadFileHash',
-            200,
-            false,
             { privateKey: assetSmartmeterPK });
 
         const event = (await assetProducingLogic.getAllLogNewMeterReadEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
 
         assert.equal(event.event, 'LogNewMeterRead');
+
         assert.deepEqual(event.returnValues, {
             0: '0',
             1: '100',
             2: '200',
-            3: false,
-            4: '100',
-            5: '100',
-            6: '200',
-            7: false,
             _assetId: '0',
             _oldMeterRead: '100',
             _newMeterRead: '200',
-            _smartMeterDown: false,
-            _certificatesCreatedForWh: '100',
-            _oldCO2OffsetReading: '100',
-            _newCO2OffsetReading: '200',
-            _serviceDown: false,
         });
 
     });
@@ -419,10 +399,7 @@ describe('AssetProducingLogic', () => {
             await assetProducingLogic.saveSmartMeterReadBundle(
                 0,
                 300,
-                false,
                 'lastSmartMeterReadFileHash',
-                300,
-                false,
                 { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
         } catch (ex) {
             failed = true;
@@ -439,32 +416,20 @@ describe('AssetProducingLogic', () => {
         const tx = await assetProducingLogic.saveSmartMeterReadBundle(
             0,
             300,
-            false,
             'lastSmartMeterReadFileHash',
-            300,
-            false,
             { privateKey: assetSmartmeterPK });
 
         const event = (await assetProducingLogic.getAllLogNewMeterReadEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
 
         assert.equal(event.event, 'LogNewMeterRead');
+
         assert.deepEqual(event.returnValues, {
             0: '0',
             1: '200',
             2: '300',
-            3: false,
-            4: '100',
-            5: '200',
-            6: '300',
-            7: false,
             _assetId: '0',
             _oldMeterRead: '200',
             _newMeterRead: '300',
-            _smartMeterDown: false,
-            _certificatesCreatedForWh: '100',
-            _oldCO2OffsetReading: '200',
-            _newCO2OffsetReading: '300',
-            _serviceDown: false,
         });
 
     });
@@ -477,10 +442,7 @@ describe('AssetProducingLogic', () => {
             await assetProducingLogic.saveSmartMeterReadBundle(
                 0,
                 50,
-                false,
                 'lastSmartMeterReadFileHash',
-                500,
-                false,
                 { privateKey: assetSmartmeterPK });
         } catch (ex) {
             failed = true;
@@ -490,64 +452,6 @@ describe('AssetProducingLogic', () => {
         }
 
         assert.isTrue(failed);
-    });
-
-    it('should fail when trying to log with saveSmartMeterReadBundle and a too low meterreading', async () => {
-
-        let failed = false;
-
-        try {
-            await assetProducingLogic.saveSmartMeterReadBundle(
-                0,
-                500,
-                false,
-                'lastSmartMeterReadFileHash',
-                50,
-                false,
-                { privateKey: assetSmartmeterPK });
-        } catch (ex) {
-            failed = true;
-            if (isGanache) {
-                assert.include(ex.message, 'revert saveSmartMeterRead: CO2 read too low');
-            }
-        }
-
-        assert.isTrue(failed);
-    });
-
-    it('should be able to log withs saveSmartMeterRead again using the right values', async () => {
-
-        const tx = await assetProducingLogic.saveSmartMeterReadBundle(
-            0,
-            400,
-            false,
-            'lastSmartMeterReadFileHash',
-            400,
-            false,
-            { privateKey: assetSmartmeterPK });
-
-        const event = (await assetProducingLogic.getAllLogNewMeterReadEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
-
-        assert.equal(event.event, 'LogNewMeterRead');
-        assert.deepEqual(event.returnValues, {
-            0: '0',
-            1: '300',
-            2: '400',
-            3: false,
-            4: '100',
-            5: '300',
-            6: '400',
-            7: false,
-            _assetId: '0',
-            _oldMeterRead: '300',
-            _newMeterRead: '400',
-            _smartMeterDown: false,
-            _certificatesCreatedForWh: '100',
-            _oldCO2OffsetReading: '300',
-            _newCO2OffsetReading: '400',
-            _serviceDown: false,
-        });
-
     });
 
     it('should fail when trying to deactive an asset as non-manager', async () => {
@@ -594,10 +498,7 @@ describe('AssetProducingLogic', () => {
             await assetProducingLogic.saveSmartMeterRead(
                 0,
                 300,
-                false,
                 'lastSmartMeterReadFileHash',
-                300,
-                false,
                 { privateKey: assetSmartmeterPK });
         } catch (ex) {
             failed = true;
@@ -617,10 +518,7 @@ describe('AssetProducingLogic', () => {
             await assetProducingLogic.saveSmartMeterReadBundle(
                 0,
                 300,
-                false,
                 'lastSmartMeterReadFileHash',
-                300,
-                false,
                 { privateKey: assetSmartmeterPK });
         } catch (ex) {
             failed = true;
@@ -683,43 +581,30 @@ describe('AssetProducingLogic', () => {
 
     });
 
-    it('should fail when trying to change a smartmeter as non-manager', async () => {
+    it('should change a smartmeter as asset-manager', async () => {
 
-        await assetProducingLogic.updateSmartMeter(0, '0x7110d0f07be70fc2a6c84fe66bf128593b2102fb', { privateKey: privateKeyDeployment });
-        const deployedAsset = await assetProducingLogic.getAsset(0);
+        await assetProducingLogic.updateSmartMeter(0, '0x7110D0F07Be70Fc2A6C84fe66BF128593b2102Fb', { privateKey: privateKeyDeployment });
+        const deployedAsset = await assetProducingLogic.getAssetById(0);
 
-        deployedAsset._owner = deployedAsset._owner.toLowerCase();
-        deployedAsset[1] = deployedAsset[1].toLowerCase();
+        // producing has 2 properties: maxOwnerChanges + assetGeneralStruct
+        assert.equal(deployedAsset.length, 2);
+        assert.equal(deployedAsset.maxOwnerChanges, 2);
 
-        deployedAsset._smartMeter = deployedAsset._smartMeter.toLowerCase();
-        deployedAsset[2] = deployedAsset[2].toLowerCase();
+        // checking the number of properties in assetGeneral
+        assert.equal(deployedAsset.assetGeneral.length, 9);
 
-        assert.deepEqual(deployedAsset, {
-            0: '0',
-            1: '0x7110d0f07be70fc2a6c84fe66bf128593b2102fb',
-            2: assetOwnerAddress.toLowerCase(),
-            3: '400',
-            4: true,
-            5: 'lastSmartMeterReadFileHash',
-            6: [matcher],
-            7: '100',
-            8: '400',
-            9: '2',
-            10: 'propertiesDocumentHash',
-            11: 'url',
-            _certificatesUsedForWh: '0',
-            _smartMeter: '0x7110d0f07be70fc2a6c84fe66bf128593b2102fb',
-            _owner: assetOwnerAddress.toLowerCase(),
-            _lastSmartMeterReadWh: '400',
-            _active: true,
-            _lastSmartMeterReadFileHash: 'lastSmartMeterReadFileHash',
-            _matcher: [matcher],
-            _certificatesCreatedForWh: '100',
-            _lastSmartMeterCO2OffsetRead: '400',
-            _maxOwnerChanges: '2',
-            _propertiesDocumentHash: 'propertiesDocumentHash',
-            _url: 'url',
-        });
+        const ag = deployedAsset.assetGeneral;
+
+        assert.equal(ag.smartMeter, '0x7110D0F07Be70Fc2A6C84fe66BF128593b2102Fb');
+        assert.equal(ag.owner, assetOwnerAddress);
+        assert.equal(ag.lastSmartMeterReadWh, 300);
+        assert.isTrue(ag.active);
+        assert.equal(ag.lastSmartMeterReadFileHash, 'lastSmartMeterReadFileHash');
+        assert.deepEqual(ag.matcher, [matcher]);
+        assert.equal(ag.propertiesDocumentHash, 'propertiesDocumentHash');
+        assert.equal(ag.url, 'url');
+        assert.equal(ag.marketLookupContract, '0x0000000000000000000000000000000000000000');
+
     });
 
     it('should fail when trying to call update', async () => {
@@ -840,7 +725,7 @@ describe('AssetProducingLogic', () => {
 
     });
 
-    it('should not add the same a matcher', async () => {
+    it.skip('should not add the same a matcher', async () => {
 
         await assetProducingLogic.addMatcher(
             0,
@@ -898,13 +783,27 @@ describe('AssetProducingLogic', () => {
 
     it('should not remove a non existing-matcher', async () => {
 
+        let failed = false;
+
+        try {
+            await assetProducingLogic.removeMatcher(
+                0,
+                matcher,
+                { privateKey: assetOwnerPK });
+        } catch (ex) {
+            failed = true;
+        }
+
+        assert.isTrue(failed);
+
+    });
+
+    it('should remove remaining matcher', async () => {
+
         await assetProducingLogic.removeMatcher(
             0,
-            matcher,
+            '0x1000000000000000000000000000000000000000',
             { privateKey: assetOwnerPK });
-        const matcherArray = (await assetProducingLogic.getMatcher(0));
-
-        assert.deepEqual(matcherArray, ['0x1000000000000000000000000000000000000000']);
 
     });
 
@@ -964,10 +863,9 @@ describe('AssetProducingLogic', () => {
 
         let failed = false;
         try {
-            await assetProducingLogic.createAssetStruct(
+            await assetProducingLogic.createAsset(
                 assetSmartmeter,
                 assetOwnerAddress,
-                2,
                 true,
                 ([
                     '0x1000000000000000000000000000000000000000',
@@ -984,6 +882,7 @@ describe('AssetProducingLogic', () => {
                 ] as any),
                 'propertiesDocumentHash',
                 'url',
+                2,
                 { privateKey: privateKeyDeployment });
         }
         catch (ex) {
@@ -992,12 +891,35 @@ describe('AssetProducingLogic', () => {
         assert.isTrue(failed);
     });
 
+    it('should return empty asset (sm#2) correctly', async () => {
+
+        const deployedAsset = await assetProducingLogic.getAssetBySmartMeter(assetSmartMeter2);
+
+        // producing has 2 properties: maxOwnerChanges + assetGeneralStruct
+        assert.equal(deployedAsset.length, 2);
+        assert.equal(deployedAsset.maxOwnerChanges, 0);
+
+        // checking the number of properties in assetGeneral
+        assert.equal(deployedAsset.assetGeneral.length, 9);
+
+        const ag = deployedAsset.assetGeneral;
+
+        assert.equal(ag.smartMeter, '0x0000000000000000000000000000000000000000');
+        assert.equal(ag.owner, '0x0000000000000000000000000000000000000000');
+        assert.equal(ag.lastSmartMeterReadWh, 0);
+        assert.isFalse(ag.active);
+        assert.equal(ag.lastSmartMeterReadFileHash, '');
+        assert.deepEqual(ag.matcher, []);
+        assert.equal(ag.propertiesDocumentHash, '');
+        assert.equal(ag.url, '');
+        assert.equal(ag.marketLookupContract, '0x0000000000000000000000000000000000000000');
+    });
+
     it('should onboard assets with 10 matcher', async () => {
 
-        await assetProducingLogic.createAssetStruct(
-            assetSmartmeter,
+        const tx = await assetProducingLogic.createAsset(
+            assetSmartMeter2,
             assetOwnerAddress,
-            2,
             true,
             ([
                 '0x1000000000000000000000000000000000000000',
@@ -1011,58 +933,100 @@ describe('AssetProducingLogic', () => {
                 '0x1000000000000000000000000000000000000008',
                 '0x1000000000000000000000000000000000000009',
             ] as any),
-            'propertiesDocumentHash',
-            'url',
+            'propertiesDocumentHash#2',
+            'url#2',
+            2,
             { privateKey: privateKeyDeployment });
 
-        assert.deepEqual(await assetProducingLogic.getAsset(1), {
-            0: '0',
-            1: assetSmartmeter,
-            2: assetOwnerAddress,
-            3: '0',
-            4: true,
-            5: '',
-            6: [
-                '0x1000000000000000000000000000000000000000',
-                '0x1000000000000000000000000000000000000001',
-                '0x1000000000000000000000000000000000000002',
-                '0x1000000000000000000000000000000000000003',
-                '0x1000000000000000000000000000000000000004',
-                '0x1000000000000000000000000000000000000005',
-                '0x1000000000000000000000000000000000000006',
-                '0x1000000000000000000000000000000000000007',
-                '0x1000000000000000000000000000000000000008',
-                '0x1000000000000000000000000000000000000009',
-            ],
-            7: '0',
-            8: '0',
-            9: '2',
-            10: 'propertiesDocumentHash',
-            11: 'url',
-            _certificatesUsedForWh: '0',
-            _smartMeter: assetSmartmeter,
-            _owner: assetOwnerAddress,
-            _lastSmartMeterReadWh: '0',
-            _active: true,
-            _lastSmartMeterReadFileHash: '',
-            _matcher: [
-                '0x1000000000000000000000000000000000000000',
-                '0x1000000000000000000000000000000000000001',
-                '0x1000000000000000000000000000000000000002',
-                '0x1000000000000000000000000000000000000003',
-                '0x1000000000000000000000000000000000000004',
-                '0x1000000000000000000000000000000000000005',
-                '0x1000000000000000000000000000000000000006',
-                '0x1000000000000000000000000000000000000007',
-                '0x1000000000000000000000000000000000000008',
-                '0x1000000000000000000000000000000000000009',
-            ],
-            _certificatesCreatedForWh: '0',
-            _lastSmartMeterCO2OffsetRead: '0',
-            _maxOwnerChanges: '2',
-            _propertiesDocumentHash: 'propertiesDocumentHash',
-            _url: 'url',
+        const event = (await assetProducingLogic.getAllLogAssetCreatedEvents(
+            { fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
+
+        assert.equal(event.event, 'LogAssetCreated');
+
+        assert.deepEqual(event.returnValues, {
+            0: accountDeployment,
+            1: '1',
+            _sender: accountDeployment,
+            _assetId: '1',
         });
+
+        const deployedAsset = await assetProducingLogic.getAssetById(1);
+
+        // producing has 2 properties: maxOwnerChanges + assetGeneralStruct
+        assert.equal(deployedAsset.length, 2);
+        assert.equal(deployedAsset.maxOwnerChanges, 2);
+
+        // checking the number of properties in assetGeneral
+        assert.equal(deployedAsset.assetGeneral.length, 9);
+
+        const ag = deployedAsset.assetGeneral;
+
+        assert.equal(ag.smartMeter, assetSmartMeter2);
+        assert.equal(ag.owner, assetOwnerAddress);
+        assert.equal(ag.lastSmartMeterReadWh, 0);
+        assert.isTrue(ag.active);
+        assert.equal(ag.lastSmartMeterReadFileHash, '');
+        assert.deepEqual(ag.matcher, [
+            '0x1000000000000000000000000000000000000000',
+            '0x1000000000000000000000000000000000000001',
+            '0x1000000000000000000000000000000000000002',
+            '0x1000000000000000000000000000000000000003',
+            '0x1000000000000000000000000000000000000004',
+            '0x1000000000000000000000000000000000000005',
+            '0x1000000000000000000000000000000000000006',
+            '0x1000000000000000000000000000000000000007',
+            '0x1000000000000000000000000000000000000008',
+            '0x1000000000000000000000000000000000000009',
+        ]);
+        assert.equal(ag.propertiesDocumentHash, 'propertiesDocumentHash#2');
+        assert.equal(ag.url, 'url#2');
+        assert.equal(ag.marketLookupContract, '0x0000000000000000000000000000000000000000');
+
+        assert.deepEqual(await assetProducingLogic.getMatcher(1), ['0x1000000000000000000000000000000000000000',
+            '0x1000000000000000000000000000000000000001',
+            '0x1000000000000000000000000000000000000002',
+            '0x1000000000000000000000000000000000000003',
+            '0x1000000000000000000000000000000000000004',
+            '0x1000000000000000000000000000000000000005',
+            '0x1000000000000000000000000000000000000006',
+            '0x1000000000000000000000000000000000000007',
+            '0x1000000000000000000000000000000000000008',
+            '0x1000000000000000000000000000000000000009']);
+    });
+
+    it('should return asset (sm#2) correctly', async () => {
+
+        const deployedAsset = await assetProducingLogic.getAssetBySmartMeter(assetSmartMeter2);
+
+        // producing has 2 properties: maxOwnerChanges + assetGeneralStruct
+        assert.equal(deployedAsset.length, 2);
+        assert.equal(deployedAsset.maxOwnerChanges, 2);
+
+        // checking the number of properties in assetGeneral
+        assert.equal(deployedAsset.assetGeneral.length, 9);
+
+        const ag = deployedAsset.assetGeneral;
+
+        assert.equal(ag.smartMeter, assetSmartMeter2);
+        assert.equal(ag.owner, assetOwnerAddress);
+        assert.equal(ag.lastSmartMeterReadWh, 0);
+        assert.isTrue(ag.active);
+        assert.equal(ag.lastSmartMeterReadFileHash, '');
+        assert.deepEqual(ag.matcher, [
+            '0x1000000000000000000000000000000000000000',
+            '0x1000000000000000000000000000000000000001',
+            '0x1000000000000000000000000000000000000002',
+            '0x1000000000000000000000000000000000000003',
+            '0x1000000000000000000000000000000000000004',
+            '0x1000000000000000000000000000000000000005',
+            '0x1000000000000000000000000000000000000006',
+            '0x1000000000000000000000000000000000000007',
+            '0x1000000000000000000000000000000000000008',
+            '0x1000000000000000000000000000000000000009',
+        ]);
+        assert.equal(ag.propertiesDocumentHash, 'propertiesDocumentHash#2');
+        assert.equal(ag.url, 'url#2');
+        assert.equal(ag.marketLookupContract, '0x0000000000000000000000000000000000000000');
 
         assert.deepEqual(await assetProducingLogic.getMatcher(1), ['0x1000000000000000000000000000000000000000',
             '0x1000000000000000000000000000000000000001',

@@ -17,21 +17,36 @@
 pragma solidity ^0.4.24;
 pragma experimental ABIEncoderV2;
 
+import "../../contracts/Asset/AssetGeneralStructContract.sol";
+
 /// @title this interface defines the functions that both consuming and producing assets are sharing
 interface AssetDbInterface {
+
+    function getAssetGeneral(uint _assetId) external  view returns (AssetGeneralStructContract.AssetGeneral general);
    
     function setActive(uint _assetId, bool _active) external;
-    function setCertificatesUsedForWh(uint _assetId, uint _certificatesUsedForWh) external;
-    function setLastSmartMeterReadFileHash(uint _assetId, string _lastSmartMeterReadFileHash) external;
-    function setLastSmartMeterReadWh(uint _assetId, uint _lastSmartMeterReadWh) external;
-    function setOwner(uint _assetId, address _owner) external;
-    function setSmartMeter(uint _assetId, address _smartMeter) external;
-    function getAssetListLength() external view returns (uint);
-    function setMarketLookupContract(uint _assetId, address _marketContractLookup) external;
-    function getMarketLookupContract(uint _assetId) external view returns (address);
-    function getAssetOwner(uint _assetId) external view returns (address);
-    function getMatcher(uint _assetId) external  view returns (address[]);
-    function addMatcher(uint _assetId, address _new) external;
-    function removeMatcher(uint _assetId, uint _index) external;
+    function getActive(uint _assetId) external view returns (bool);
 
+    function setLastSmartMeterReadFileHash(uint _assetId, string _lastSmartMeterReadFileHash) external;
+    function getLastSmartMeterReadFileHash(uint _assetId) external view returns (string);
+
+    function setLastSmartMeterReadWh(uint _assetId, uint _lastSmartMeterReadWh) external;
+    function getLastSmartMeterReadWh(uint _assetId) external  view returns (uint);
+
+    function setAssetOwner(uint _assetId, address _owner) external;
+    function getAssetOwner(uint _assetId) external view returns (address);
+
+    function setSmartMeter(uint _assetId, address _smartMeter) external;
+    function getSmartMeter(uint _assetId) external view returns (address);
+
+    function setMarketLookupContract(uint _assetId, address _marketLookupContract) external;
+    function getMarketLookupContract(uint _assetId) external view returns (address);
+
+    function addMatcher(uint _assetId, address _matcher) external;
+    function getMatcher(uint _assetId) external view returns (address[]);
+
+    function setMatcher(uint _assetId, address[] _matcher) public;
+    function removeMatcher(uint _assetId, address _removal) public returns (bool);
+
+    function getAssetListLength() external view returns (uint);
 }

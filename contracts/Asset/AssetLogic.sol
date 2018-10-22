@@ -21,15 +21,16 @@ import "ew-utils-general-contracts/Interfaces/Updatable.sol";
 import "../../contracts/Interfaces/AssetDbInterface.sol";
 import "../../contracts/Interfaces/AssetGeneralInterface.sol";
 import "../../contracts/AssetContractLookup.sol";
-
+import "../../contracts/Asset/AssetGeneralStructContract.sol";
 
 /// @title Contract for storing the current logic-contracts-addresses for the certificate of origin
-contract AssetLogic is RoleManagement, Updatable, AssetGeneralInterface {
+contract AssetLogic is RoleManagement, Updatable, AssetGeneralInterface, AssetGeneralStructContract {
 
     event LogAssetCreated(address _sender, uint indexed _assetId);
     event LogAssetFullyInitialized(uint indexed _assetId);
     event LogAssetSetActive(uint indexed _assetId);
     event LogAssetSetInactive(uint indexed _assetId);
+
 
     AssetDbInterface public db;
 
@@ -71,7 +72,7 @@ contract AssetLogic is RoleManagement, Updatable, AssetGeneralInterface {
     function setMarketLookupContract(uint _assetId, address _marketContractLookup)
         external   
     {
-        require(msg.sender == db.getAssetOwner(_assetId));
+        require(msg.sender == db.getAssetOwner(_assetId),"sender is not the assetOwner");
         db.setMarketLookupContract(_assetId, _marketContractLookup);
     }
 
@@ -103,7 +104,7 @@ contract AssetLogic is RoleManagement, Updatable, AssetGeneralInterface {
         view 
         returns (uint)
     {
-        return db.getAssetListLength();
+       return db.getAssetListLength();
     }
 
 
@@ -123,47 +124,35 @@ contract AssetLogic is RoleManagement, Updatable, AssetGeneralInterface {
         return db.getMatcher(_assetId);
     }
 
-    function searchArray(address[] _array, address _toFind) public pure returns (bool _found, uint _index){
-
-        if(_array.length == 0) return (false, 0);
-
-        for(uint i = 0; i < _array.length; i++){
-            if(_array[i] == _toFind) return (true, i);
-        }
-    }
-
     function addMatcher(uint _assetId, address _new) external {
        // Asset memory a = assets[_assetId];
         
         require(msg.sender == db.getAssetOwner(_assetId),"addMatcher: not the owner");
     
         address[] memory matcher = db.getMatcher(_assetId);
-        (bool found, ) = searchArray(matcher, _new);
-
-        if(!found) {
-
-            require(matcher.length+1 <= AssetContractLookup(owner).maxMatcherPerAsset(),"addMatcher: too many matcher already");
+  
+        require(matcher.length+1 <= AssetContractLookup(owner).maxMatcherPerAsset(),"addMatcher: too many matcher already");
             
-            db.addMatcher(_assetId,_new);
-            
-        } 
-        
+        db.addMatcher(_assetId,_new);    
     }
  
     function removeMatcher(uint _assetId, address _remove) external  {
-    //    Asset memory a = assets[_assetId];
-        require(msg.sender == db.getAssetOwner(_assetId),"addMatcher: not the owner");
-
-        address[] memory matcher = db.getMatcher(_assetId);
-        (bool found, uint index) = searchArray(matcher, _remove);
-
-        if(found){
-            
-            db.removeMatcher(_assetId,index);
-         //   db.setMatcher(_assetId,tempMatcher);
-
-         //   a.matcher.length-1;
-        }
+        require(msg.sender == db.getAssetOwner(_assetId),"removeMatcher: not the owner");
+        require(db.removeMatcher(_assetId,_remove),"removeMatcher: address not found");
+    
     }
 
+    function checkAssetGeneralExistingStatus(AssetGeneralStructContract.AssetGeneral _assetGeneral) internal pure returns (bool) {
+        return !(
+            _assetGeneral.smartMeter == 0x0 
+            && _assetGeneral.owner == 0x0
+            && _assetGeneral.lastSmartMeterReadWh == 0
+            && !_assetGeneral.active
+            && bytes(_assetGeneral.lastSmartMeterReadFileHash).length == 0
+            && _assetGeneral.matcher.length == 0
+            && bytes(_assetGeneral.propertiesDocumentHash).length == 0
+            && bytes(_assetGeneral.url).length == 0
+            && _assetGeneral.marketLookupContract == 0x0
+        );
+    }
 }
