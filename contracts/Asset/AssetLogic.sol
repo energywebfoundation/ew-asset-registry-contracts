@@ -90,17 +90,6 @@ contract AssetLogic is RoleManagement, Updatable, AssetGeneralInterface, AssetGe
         Owned(db).changeOwner(_newLogic);
     }
 
-    /// @notice Changes the address of a smart meter belonging to an asset
-    /// @param _assetId The id belonging to an entry in the asset registry
-    /// @param _newSmartMeter The address of the new smart meter
-    function updateSmartMeter(uint _assetId, address _newSmartMeter)
-        external
-        isInitialized
-        onlyRole(RoleManagement.Role.AssetAdmin)
-    {
-        db.setSmartMeter(_assetId, _newSmartMeter);
-    }
-
     /// @notice Function to get the amount of all assets
     /// @dev needed to iterate though all the asset
     /// @return the amount of all assets
@@ -181,4 +170,31 @@ contract AssetLogic is RoleManagement, Updatable, AssetGeneralInterface, AssetGe
             _newMeterRead
         );
     } 
+
+    function getAssetGeneral(uint _assetId) external view returns (
+        address smartMeter,
+        address owner,
+        uint lastSmartMeterReadWh,
+        bool active,
+        string lastSmartMeterReadFileHash,
+        address[] matcher,
+        string propertiesDocumentHash,
+        string url,
+        address marketLookupContract,
+        bool bundled
+    )
+    {
+        AssetGeneral memory a = db.getAssetGeneral(_assetId);
+
+        smartMeter = a.smartMeter;
+        owner = a.owner;
+        lastSmartMeterReadWh = a.lastSmartMeterReadWh;
+        active = a.active;
+        lastSmartMeterReadFileHash = a.lastSmartMeterReadFileHash;
+        matcher = a.matcher;
+        propertiesDocumentHash = a.propertiesDocumentHash;
+        url = a.url;
+        marketLookupContract = a.marketLookupContract;
+        bundled = a.bundled;
+    }
 }

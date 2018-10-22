@@ -173,4 +173,10 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
     function checkAssetExist(address _smartMeter) public view returns (bool){
         return checkAssetGeneralExistingStatus(AssetProducingDB(db).getAssetBySmartMeter(_smartMeter).assetGeneral);
     }
+
+    function setBundleActive(uint _assetId, bool _active) external {
+        
+        require(msg.sender == db.getAssetOwner(_assetId),"setBundleActive: not the owner");   
+        db.setIsBundled(_assetId, _active);
+    }
 }

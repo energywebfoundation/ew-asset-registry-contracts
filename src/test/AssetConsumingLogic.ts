@@ -79,7 +79,7 @@ describe('AssetConsumingLogic', () => {
         const deployedContracts = await migrateAssetRegistryContracts(web3, userContractLookupAddr);
 
         userContractLookup = new UserContractLookup((web3 as any),
-                                                    userContractLookupAddr);
+            userContractLookupAddr);
         assetContractLookup = new AssetContractLookup((web3 as any));
         assetProducingLogic = new AssetProducingRegistryLogic((web3 as any));
         assetConsumingLogic = new AssetConsumingRegistryLogic((web3 as any));
@@ -212,6 +212,7 @@ describe('AssetConsumingLogic', () => {
         assert.equal(ag.propertiesDocumentHash, '');
         assert.equal(ag.url, '');
         assert.equal(ag.marketLookupContract, '0x0000000000000000000000000000000000000000');
+        assert.isFalse(ag.bundled);
     });
 
     it('should onboard a new asset', async () => {
@@ -284,6 +285,8 @@ describe('AssetConsumingLogic', () => {
         assert.equal(ag.propertiesDocumentHash, 'propertiesDocumentHash');
         assert.equal(ag.url, 'urlString');
         assert.equal(ag.marketLookupContract, '0x0000000000000000000000000000000000000000');
+        assert.isFalse(ag.bundled);
+
     });
 
     it('should return the deployed asset correctly', async () => {
@@ -306,6 +309,7 @@ describe('AssetConsumingLogic', () => {
         assert.equal(ag.propertiesDocumentHash, 'propertiesDocumentHash');
         assert.equal(ag.url, 'urlString');
         assert.equal(ag.marketLookupContract, '0x0000000000000000000000000000000000000000');
+        assert.isFalse(ag.bundled);
 
     });
 
@@ -371,6 +375,7 @@ describe('AssetConsumingLogic', () => {
         assert.equal(ag.propertiesDocumentHash, 'propertiesDocumentHash');
         assert.equal(ag.url, 'urlString');
         assert.equal(ag.marketLookupContract, '0x0000000000000000000000000000000000000000');
+        assert.isFalse(ag.bundled);
 
     });
 
@@ -437,6 +442,7 @@ describe('AssetConsumingLogic', () => {
         assert.equal(ag.propertiesDocumentHash, 'propertiesDocumentHash');
         assert.equal(ag.url, 'urlString');
         assert.equal(ag.marketLookupContract, '0x0000000000000000000000000000000000000000');
+        assert.isFalse(ag.bundled);
 
     });
 
@@ -452,7 +458,7 @@ describe('AssetConsumingLogic', () => {
 
         try {
             await assetConsumingLogic.setMarketLookupContract(0, '0x1000000000000000000000000000000000000005',
-                                                              { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
+                { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
         } catch (ex) {
             if (isGanache) assert.include(ex.message, 'revert sender is not the assetOwner');
 
@@ -468,7 +474,7 @@ describe('AssetConsumingLogic', () => {
 
         try {
             await assetConsumingLogic.setMarketLookupContract(0, '0x1000000000000000000000000000000000000005',
-                                                              { privateKey: matcherPK });
+                { privateKey: matcherPK });
         } catch (ex) {
             if (isGanache) assert.include(ex.message, 'revert sender is not the assetOwner');
 
@@ -484,7 +490,7 @@ describe('AssetConsumingLogic', () => {
 
         try {
             await assetConsumingLogic.setMarketLookupContract(0, '0x1000000000000000000000000000000000000005',
-                                                              { privateKey: privateKeyDeployment });
+                { privateKey: privateKeyDeployment });
         } catch (ex) {
             if (isGanache) assert.include(ex.message, 'revert sender is not the assetOwner');
 
@@ -497,7 +503,7 @@ describe('AssetConsumingLogic', () => {
     it('should set marketAddress', async () => {
 
         await assetConsumingLogic.setMarketLookupContract(0, '0x1000000000000000000000000000000000000005',
-                                                          { privateKey: assetOwnerPK });
+            { privateKey: assetOwnerPK });
 
         assert.equal(await assetConsumingLogic.getMarketLookupContract(0), '0x1000000000000000000000000000000000000005');
 
@@ -523,6 +529,7 @@ describe('AssetConsumingLogic', () => {
         assert.equal(ag.propertiesDocumentHash, 'propertiesDocumentHash');
         assert.equal(ag.url, 'urlString');
         assert.equal(ag.marketLookupContract, '0x1000000000000000000000000000000000000005');
+        assert.isFalse(ag.bundled);
 
     });
 
@@ -593,6 +600,7 @@ describe('AssetConsumingLogic', () => {
         assert.equal(ag.propertiesDocumentHash, 'propertiesDocumentHash');
         assert.equal(ag.url, 'urlString');
         assert.equal(ag.marketLookupContract, '0x1000000000000000000000000000000000000005');
+        assert.isFalse(ag.bundled);
 
     });
 
@@ -664,6 +672,7 @@ describe('AssetConsumingLogic', () => {
         assert.equal(ag.propertiesDocumentHash, 'propertiesDocumentHash');
         assert.equal(ag.url, 'urlString');
         assert.equal(ag.marketLookupContract, '0x1000000000000000000000000000000000000005');
+        assert.isFalse(ag.bundled);
 
     });
 
@@ -713,6 +722,7 @@ describe('AssetConsumingLogic', () => {
         assert.equal(ag.propertiesDocumentHash, 'propertiesDocumentHash');
         assert.equal(ag.url, 'urlString');
         assert.equal(ag.marketLookupContract, '0x1000000000000000000000000000000000000005');
+        assert.isFalse(ag.bundled);
 
     });
 
@@ -770,6 +780,7 @@ describe('AssetConsumingLogic', () => {
         assert.equal(ag.propertiesDocumentHash, 'propertiesDocumentHash');
         assert.equal(ag.url, 'urlString');
         assert.equal(ag.marketLookupContract, '0x1000000000000000000000000000000000000005');
+        assert.isFalse(ag.bundled);
 
     });
 
@@ -901,6 +912,8 @@ describe('AssetConsumingLogic', () => {
         assert.equal(ag.propertiesDocumentHash, 'propertiesDocumentHash#2');
         assert.equal(ag.url, 'urlString#2');
         assert.equal(ag.marketLookupContract, '0x0000000000000000000000000000000000000000');
+        assert.isFalse(ag.bundled);
+
 
     });
 });
