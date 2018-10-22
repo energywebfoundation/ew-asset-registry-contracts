@@ -199,7 +199,7 @@ describe('AssetConsumingLogic', () => {
         // all the properties are in 1 struct
         assert.equal(emptyAsset.length, 1);
         // checking the number of properties in assetGeneral
-        assert.equal(emptyAsset.assetGeneral.length, 9);
+        assert.equal(emptyAsset.assetGeneral.length, 10);
 
         const ag = emptyAsset.assetGeneral;
 
@@ -271,7 +271,7 @@ describe('AssetConsumingLogic', () => {
         // all the properties are in 1 struct
         assert.equal(deployedAsset.length, 1);
         // checking the number of properties in assetGeneral
-        assert.equal(deployedAsset.assetGeneral.length, 9);
+        assert.equal(deployedAsset.assetGeneral.length, 10);
 
         const ag = deployedAsset.assetGeneral;
 
@@ -293,7 +293,7 @@ describe('AssetConsumingLogic', () => {
         // all the properties are in 1 struct
         assert.equal(deployedAsset.length, 1);
         // checking the number of properties in assetGeneral
-        assert.equal(deployedAsset.assetGeneral.length, 9);
+        assert.equal(deployedAsset.assetGeneral.length, 10);
 
         const ag = deployedAsset.assetGeneral;
 
@@ -318,7 +318,6 @@ describe('AssetConsumingLogic', () => {
                 0,
                 100,
                 'newMeterReadFileHash',
-                false,
                 { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
         } catch (ex) {
             if (isGanache) assert.include(ex.message, 'revert saveSmartMeterRead: wrong sender');
@@ -335,7 +334,6 @@ describe('AssetConsumingLogic', () => {
             0,
             100,
             'newMeterReadFileHash',
-            false,
             { privateKey: assetSmartmeterPK });
 
         const event = (await assetConsumingLogic.getAllLogNewMeterReadEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
@@ -360,7 +358,7 @@ describe('AssetConsumingLogic', () => {
         // all the properties are in 1 struct
         assert.equal(deployedAsset.length, 1);
         // checking the number of properties in assetGeneral
-        assert.equal(deployedAsset.assetGeneral.length, 9);
+        assert.equal(deployedAsset.assetGeneral.length, 10);
 
         const ag = deployedAsset.assetGeneral;
 
@@ -385,7 +383,6 @@ describe('AssetConsumingLogic', () => {
                 0,
                 100,
                 'newMeterReadFileHash',
-                false,
                 { privateKey: assetSmartmeterPK });
         }
         catch (ex) {
@@ -404,7 +401,6 @@ describe('AssetConsumingLogic', () => {
             0,
             200,
             'newMeterReadFileHash',
-            false,
             { privateKey: assetSmartmeterPK });
 
         const event = (await assetConsumingLogic.getAllLogNewMeterReadEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
@@ -428,7 +424,7 @@ describe('AssetConsumingLogic', () => {
         // all the properties are in 1 struct
         assert.equal(deployedAsset.length, 1);
         // checking the number of properties in assetGeneral
-        assert.equal(deployedAsset.assetGeneral.length, 9);
+        assert.equal(deployedAsset.assetGeneral.length, 10);
 
         const ag = deployedAsset.assetGeneral;
 
@@ -514,7 +510,7 @@ describe('AssetConsumingLogic', () => {
         // all the properties are in 1 struct
         assert.equal(deployedAsset.length, 1);
         // checking the number of properties in assetGeneral
-        assert.equal(deployedAsset.assetGeneral.length, 9);
+        assert.equal(deployedAsset.assetGeneral.length, 10);
 
         const ag = deployedAsset.assetGeneral;
 
@@ -584,7 +580,7 @@ describe('AssetConsumingLogic', () => {
         // all the properties are in 1 struct
         assert.equal(deployedAsset.length, 1);
         // checking the number of properties in assetGeneral
-        assert.equal(deployedAsset.assetGeneral.length, 9);
+        assert.equal(deployedAsset.assetGeneral.length, 10);
 
         const ag = deployedAsset.assetGeneral;
 
@@ -655,7 +651,7 @@ describe('AssetConsumingLogic', () => {
         // all the properties are in 1 struct
         assert.equal(deployedAsset.length, 1);
         // checking the number of properties in assetGeneral
-        assert.equal(deployedAsset.assetGeneral.length, 9);
+        assert.equal(deployedAsset.assetGeneral.length, 10);
 
         const ag = deployedAsset.assetGeneral;
 
@@ -704,7 +700,7 @@ describe('AssetConsumingLogic', () => {
         // all the properties are in 1 struct
         assert.equal(deployedAsset.length, 1);
         // checking the number of properties in assetGeneral
-        assert.equal(deployedAsset.assetGeneral.length, 9);
+        assert.equal(deployedAsset.assetGeneral.length, 10);
 
         const ag = deployedAsset.assetGeneral;
 
@@ -751,7 +747,7 @@ describe('AssetConsumingLogic', () => {
         // all the properties are in 1 struct
         assert.equal(deployedAsset.length, 1);
         // checking the number of properties in assetGeneral
-        assert.equal(deployedAsset.assetGeneral.length, 9);
+        assert.equal(deployedAsset.assetGeneral.length, 10);
 
         const ag = deployedAsset.assetGeneral;
 
@@ -882,7 +878,7 @@ describe('AssetConsumingLogic', () => {
         // all the properties are in 1 struct
         assert.equal(deployedAsset.length, 1);
         // checking the number of properties in assetGeneral
-        assert.equal(deployedAsset.assetGeneral.length, 9);
+        assert.equal(deployedAsset.assetGeneral.length, 10);
 
         const ag = deployedAsset.assetGeneral;
 

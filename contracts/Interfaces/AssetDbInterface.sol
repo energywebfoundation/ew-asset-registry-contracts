@@ -39,6 +39,10 @@ interface AssetDbInterface {
     function setSmartMeter(uint _assetId, address _smartMeter) external;
     function getSmartMeter(uint _assetId) external view returns (address);
 
+
+    function getIsBundled(uint _assetId) external view returns (bool);
+    function setIsBundled(uint _assetId, bool _bundled) external;
+
     function setMarketLookupContract(uint _assetId, address _marketLookupContract) external;
     function getMarketLookupContract(uint _assetId) external view returns (address);
 
@@ -47,6 +51,8 @@ interface AssetDbInterface {
 
     function setMatcher(uint _assetId, address[] _matcher) public;
     function removeMatcher(uint _assetId, address _removal) public returns (bool);
+
+    function setSmartMeterRead(uint _assetId, uint lastSmartMeterReadWh, string _lastSmartMeterReadFileHash) external;
 
     function getAssetListLength() external view returns (uint);
 }

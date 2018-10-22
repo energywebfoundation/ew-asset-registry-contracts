@@ -30,6 +30,11 @@ contract AssetLogic is RoleManagement, Updatable, AssetGeneralInterface, AssetGe
     event LogAssetFullyInitialized(uint indexed _assetId);
     event LogAssetSetActive(uint indexed _assetId);
     event LogAssetSetInactive(uint indexed _assetId);
+    event LogNewMeterRead(
+        uint indexed _assetId, 
+        uint _oldMeterRead, 
+        uint _newMeterRead
+    );
 
 
     AssetDbInterface public db;
@@ -125,12 +130,9 @@ contract AssetLogic is RoleManagement, Updatable, AssetGeneralInterface, AssetGe
     }
 
     function addMatcher(uint _assetId, address _new) external {
-       // Asset memory a = assets[_assetId];
         
-        require(msg.sender == db.getAssetOwner(_assetId),"addMatcher: not the owner");
-    
+        require(msg.sender == db.getAssetOwner(_assetId),"addMatcher: not the owner");    
         address[] memory matcher = db.getMatcher(_assetId);
-  
         require(matcher.length+1 <= AssetContractLookup(owner).maxMatcherPerAsset(),"addMatcher: too many matcher already");
             
         db.addMatcher(_assetId,_new);    
@@ -155,4 +157,30 @@ contract AssetLogic is RoleManagement, Updatable, AssetGeneralInterface, AssetGe
             && _assetGeneral.marketLookupContract == 0x0
         );
     }
+
+    function setSmartMeterReadInternal(
+        uint _assetId, 
+        uint _newMeterRead, 
+        string _smartMeterReadFileHash
+    ) internal {
+
+        AssetGeneralStructContract.AssetGeneral memory asset = db.getAssetGeneral(_assetId);
+        require(asset.smartMeter == msg.sender,"saveSmartMeterRead: wrong sender");
+        require(asset.active,"saveSmartMeterRead: asset not active");
+
+        uint oldMeterRead = asset.lastSmartMeterReadWh; 
+
+        require(_newMeterRead > oldMeterRead,"saveSmartMeterRead: meterread too low");
+        /// @dev need to check if new meter read is higher then the old one
+
+        db.setSmartMeterRead(_assetId, _newMeterRead, _smartMeterReadFileHash);
+     
+        emit LogNewMeterRead(
+            _assetId, 
+            oldMeterRead, 
+            _newMeterRead
+        );
+        
+
+    } 
 }

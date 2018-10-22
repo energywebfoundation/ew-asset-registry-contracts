@@ -40,6 +40,14 @@ contract AssetGeneralDB is Owned, AssetGeneralStructContract, AssetDbInterface {
         return getAssetGeneralInternal(_assetId);
     }
 
+    function getIsBundled(uint _assetId) external onlyOwner view returns (bool) {
+        return getAssetGeneralInternal(_assetId).bundled;
+    }
+
+    function setIsBundled(uint _assetId, bool _bundled) external onlyOwner {
+        getAssetGeneralInternal(_assetId).bundled = _bundled;
+    }
+
     function setLastSmartMeterReadFileHash(uint _assetId, string _lastSmartMeterReadFileHash) external onlyOwner {
         getAssetGeneralInternal(_assetId).lastSmartMeterReadFileHash = _lastSmartMeterReadFileHash;
     }
@@ -102,5 +110,17 @@ contract AssetGeneralDB is Owned, AssetGeneralStructContract, AssetDbInterface {
                 return true;
             }
         }
+    }
+
+    function setSmartMeterRead(
+        uint _assetId, 
+        uint lastSmartMeterReadWh, 
+        string _lastSmartMeterReadFileHash)
+    external
+    onlyOwner
+    {
+        AssetGeneral storage general = getAssetGeneralInternal(_assetId);
+        general.lastSmartMeterReadWh = lastSmartMeterReadWh;
+        general.lastSmartMeterReadFileHash = _lastSmartMeterReadFileHash;
     }
 }

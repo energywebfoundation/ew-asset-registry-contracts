@@ -213,7 +213,7 @@ describe('AssetProducingLogic', () => {
         // all the properties are in 1 struct
         assert.equal(deployedAsset.length, 2);
         // checking the number of properties in assetGeneral
-        assert.equal(deployedAsset.assetGeneral.length, 9);
+        assert.equal(deployedAsset.assetGeneral.length, 10);
 
         const ag = deployedAsset.assetGeneral;
 
@@ -268,7 +268,7 @@ describe('AssetProducingLogic', () => {
         assert.equal(deployedAsset.maxOwnerChanges, 2);
 
         // checking the number of properties in assetGeneral
-        assert.equal(deployedAsset.assetGeneral.length, 9);
+        assert.equal(deployedAsset.assetGeneral.length, 10);
 
         const ag = deployedAsset.assetGeneral;
 
@@ -290,7 +290,7 @@ describe('AssetProducingLogic', () => {
         assert.equal(deployedAsset.maxOwnerChanges, 2);
 
         // checking the number of properties in assetGeneral
-        assert.equal(deployedAsset.assetGeneral.length, 9);
+        assert.equal(deployedAsset.assetGeneral.length, 10);
 
         const ag = deployedAsset.assetGeneral;
 
@@ -391,69 +391,6 @@ describe('AssetProducingLogic', () => {
 
     });
 
-    it('should fail when trying to log with saveSmartMeterReadBundle using the wrong smartmeter', async () => {
-
-        let failed = false;
-
-        try {
-            await assetProducingLogic.saveSmartMeterReadBundle(
-                0,
-                300,
-                'lastSmartMeterReadFileHash',
-                { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
-        } catch (ex) {
-            failed = true;
-            if (isGanache) {
-                assert.include(ex.message, 'revert saveSmartMeterRead: wrong sender');
-            }
-        }
-
-        assert.isTrue(failed);
-    });
-
-    it('should be able log to with saveSmartMeterReadBundle with the right account', async () => {
-
-        const tx = await assetProducingLogic.saveSmartMeterReadBundle(
-            0,
-            300,
-            'lastSmartMeterReadFileHash',
-            { privateKey: assetSmartmeterPK });
-
-        const event = (await assetProducingLogic.getAllLogNewMeterReadEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
-
-        assert.equal(event.event, 'LogNewMeterRead');
-
-        assert.deepEqual(event.returnValues, {
-            0: '0',
-            1: '200',
-            2: '300',
-            _assetId: '0',
-            _oldMeterRead: '200',
-            _newMeterRead: '300',
-        });
-
-    });
-
-    it('should fail when trying to log with saveSmartMeterReadBundle and a too low meterreading', async () => {
-
-        let failed = false;
-
-        try {
-            await assetProducingLogic.saveSmartMeterReadBundle(
-                0,
-                50,
-                'lastSmartMeterReadFileHash',
-                { privateKey: assetSmartmeterPK });
-        } catch (ex) {
-            failed = true;
-            if (isGanache) {
-                assert.include(ex.message, 'revert saveSmartMeterRead: meterread too low');
-            }
-        }
-
-        assert.isTrue(failed);
-    });
-
     it('should fail when trying to deactive an asset as non-manager', async () => {
 
         let failed = false;
@@ -496,26 +433,6 @@ describe('AssetProducingLogic', () => {
 
         try {
             await assetProducingLogic.saveSmartMeterRead(
-                0,
-                300,
-                'lastSmartMeterReadFileHash',
-                { privateKey: assetSmartmeterPK });
-        } catch (ex) {
-            failed = true;
-            if (isGanache) {
-                assert.include(ex.message, 'revert saveSmartMeterRead: asset not active');
-            }
-        }
-
-        assert.isTrue(failed);
-    });
-
-    it('should fail when trying to log with saveSmartMeterReadBundle with a deactivated asset', async () => {
-
-        let failed = false;
-
-        try {
-            await assetProducingLogic.saveSmartMeterReadBundle(
                 0,
                 300,
                 'lastSmartMeterReadFileHash',
@@ -591,13 +508,13 @@ describe('AssetProducingLogic', () => {
         assert.equal(deployedAsset.maxOwnerChanges, 2);
 
         // checking the number of properties in assetGeneral
-        assert.equal(deployedAsset.assetGeneral.length, 9);
+        assert.equal(deployedAsset.assetGeneral.length, 10);
 
         const ag = deployedAsset.assetGeneral;
 
         assert.equal(ag.smartMeter, '0x7110D0F07Be70Fc2A6C84fe66BF128593b2102Fb');
         assert.equal(ag.owner, assetOwnerAddress);
-        assert.equal(ag.lastSmartMeterReadWh, 300);
+        assert.equal(ag.lastSmartMeterReadWh, 200);
         assert.isTrue(ag.active);
         assert.equal(ag.lastSmartMeterReadFileHash, 'lastSmartMeterReadFileHash');
         assert.deepEqual(ag.matcher, [matcher]);
@@ -900,7 +817,7 @@ describe('AssetProducingLogic', () => {
         assert.equal(deployedAsset.maxOwnerChanges, 0);
 
         // checking the number of properties in assetGeneral
-        assert.equal(deployedAsset.assetGeneral.length, 9);
+        assert.equal(deployedAsset.assetGeneral.length, 10);
 
         const ag = deployedAsset.assetGeneral;
 
@@ -957,7 +874,7 @@ describe('AssetProducingLogic', () => {
         assert.equal(deployedAsset.maxOwnerChanges, 2);
 
         // checking the number of properties in assetGeneral
-        assert.equal(deployedAsset.assetGeneral.length, 9);
+        assert.equal(deployedAsset.assetGeneral.length, 10);
 
         const ag = deployedAsset.assetGeneral;
 
@@ -1003,7 +920,7 @@ describe('AssetProducingLogic', () => {
         assert.equal(deployedAsset.maxOwnerChanges, 2);
 
         // checking the number of properties in assetGeneral
-        assert.equal(deployedAsset.assetGeneral.length, 9);
+        assert.equal(deployedAsset.assetGeneral.length, 10);
 
         const ag = deployedAsset.assetGeneral;
 

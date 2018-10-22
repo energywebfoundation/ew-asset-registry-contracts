@@ -46,34 +46,25 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
         userContractLookup = _userContractLookup;
     }
 
-
     /// @notice Logs meter read
     /// @param _assetId The id belonging to an entry in the asset registry
     /// @param _newMeterRead The current meter read of the asset
     /// @param _lastSmartMeterReadFileHash Last meter read file hash
-    function saveSmartMeterReadInternal(
+    function saveSmartMeterRead(
         uint _assetId, 
         uint _newMeterRead, 
-        string _lastSmartMeterReadFileHash, 
-        bool _bundle
-        
+        string _lastSmartMeterReadFileHash
     ) 
-        internal
+        external
         isInitialized
     {
+        setSmartMeterReadInternal(_assetId, _newMeterRead, _lastSmartMeterReadFileHash);
+
         AssetProducingDB.Asset memory asset = AssetProducingDB(db).getAssetById(_assetId);
-        require(asset.assetGeneral.smartMeter == msg.sender,"saveSmartMeterRead: wrong sender");
-        require(asset.assetGeneral.active,"saveSmartMeterRead: asset not active");
 
         uint oldMeterRead = asset.assetGeneral.lastSmartMeterReadWh; 
-
-        require(_newMeterRead > oldMeterRead,"saveSmartMeterRead: meterread too low");
-        /// @dev need to check if new meter read is higher then the old one
-        db.setLastSmartMeterReadFileHash(_assetId, _lastSmartMeterReadFileHash);
-        db.setLastSmartMeterReadWh(_assetId, _newMeterRead);
-
         if(asset.assetGeneral.marketLookupContract != 0x0){
-            if (_bundle) {
+            if (asset.assetGeneral.bundled) {
                 EnergyCertificateBundleInterface(OriginContractLookupInterface(asset.assetGeneral.marketLookupContract).originLogicRegistry()).createBundle(
                     _assetId, 
                     _newMeterRead - oldMeterRead, 
@@ -90,49 +81,14 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
                 ); 
             }
         }
-        
-        emit LogNewMeterRead(
-            _assetId, 
-            oldMeterRead, 
-            _newMeterRead
-        );
     }
 
-    /// @notice Logs meter read
-    /// @param _assetId The id belonging to an entry in the asset registry
-    /// @param _newMeterRead The current meter read of the asset
-    /// @param _lastSmartMeterReadFileHash Last meter read file hash
-    function saveSmartMeterRead(
-        uint _assetId, 
-        uint _newMeterRead, 
-        string _lastSmartMeterReadFileHash
-    ) 
-        external
-        isInitialized
-    {
-        saveSmartMeterReadInternal(_assetId, _newMeterRead, _lastSmartMeterReadFileHash, false);
-    }
-
-        /// @notice Logs meter read
-    /// @param _assetId The id belonging to an entry in the asset registry
-    /// @param _newMeterRead The current meter read of the asset
-    /// @param _lastSmartMeterReadFileHash Last meter read file hash
-    function saveSmartMeterReadBundle(
-        uint _assetId, 
-        uint _newMeterRead, 
-        string _lastSmartMeterReadFileHash
-    ) 
-        external
-        isInitialized
-    {
-        saveSmartMeterReadInternal(_assetId, _newMeterRead, _lastSmartMeterReadFileHash, true);
-    }
    
     /// @notice Gets the last filehash 
     /// @param _assetId The id belonging to an entry in the asset registry
     /// @return The last smartmeterread-filehash
     function getLastSmartMeterReadFileHash(uint _assetId) external view returns (string){
-      //  return AssetProducingRegistryDB((db)).getAsset(_assetId).lastSmartMeterReadFileHash;
+        return db.getLastSmartMeterReadFileHash(_assetId);
     }
 
     function checkMatcherAmount(address[] _matcher) internal view {
@@ -174,7 +130,8 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
             matcher: _matcher,
             propertiesDocumentHash: _propertiesDocumentHash,
             url: _url,
-            marketLookupContract: 0x0
+            marketLookupContract: 0x0,
+            bundled: false
         });
 
         AssetProducingDB.Asset memory _asset = AssetProducingDB.Asset(

@@ -20,7 +20,12 @@ pragma experimental ABIEncoderV2;
 /// @title this interface defines the functions of the AssetContractLookup-Contract 
 interface AssetGeneralInterface {
     function setActive(uint _assetId, bool _active) external;
+    function setMarketLookupContract(uint _assetId, address _marketContractLookup) external;  
+    function getMarketLookupContract(uint _assetId) external view returns (address);
     function updateSmartMeter(uint _assetId, address _newSmartMeter) external;
     function getAssetListLength() external view returns (uint);
- 
+
+    function addMatcher(uint _assetId, address _new) external ;
+    function getMatcher(uint _assetId) external view returns(address[]);
+    function removeMatcher(uint _assetId, address _remove) external;
 }

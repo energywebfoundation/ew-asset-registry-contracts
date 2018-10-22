@@ -39,34 +39,12 @@ contract AssetConsumingRegistryLogic is AssetLogic, AssetConsumingInterface {
     /// @param _assetId The id belonging to an entry in the asset registry
     /// @param _newMeterRead The current meter read of the asset
     /// @param _lastSmartMeterReadFileHash Last meter read file hash
-    /// @param _smartMeterDown Flag if the smartmeter had an error during reading
-    function saveSmartMeterRead(uint _assetId, uint _newMeterRead, string _lastSmartMeterReadFileHash, bool _smartMeterDown) 
+    function saveSmartMeterRead(uint _assetId, uint _newMeterRead, string _lastSmartMeterReadFileHash) 
         external
         isInitialized
     {
-        AssetConsumingDB.AssetGeneral memory asset = db.getAssetGeneral(_assetId);
-        require(asset.smartMeter == msg.sender,"saveSmartMeterRead: wrong sender");
-        require(asset.active,"saveSmartMeterRead: asset not active");
-
-        uint oldMeterRead = asset.lastSmartMeterReadWh;
-        require(_newMeterRead>oldMeterRead,"saveSmartMeterRead: meterread too low");
-
-        emit LogNewMeterRead(_assetId,  asset.lastSmartMeterReadWh, _newMeterRead);
-        db.setLastSmartMeterReadFileHash(_assetId, _lastSmartMeterReadFileHash);
-        AssetConsumingDB((db)).setLastSmartMeterReadWh(_assetId, _newMeterRead);
+        setSmartMeterReadInternal(_assetId, _newMeterRead, _lastSmartMeterReadFileHash);
     }
-
-/*
-    /// @notice sets the consumption for a period (in Wh)
-    /// @param _assetId assetId
-    /// @param _consumed the amount of energy consumed
-    function setCertificatesUsedForWh(uint _assetId, uint _consumed)
-        external
-     //   onlyAccount(address(cooContract.marketRegistry()))
-    {
-        AssetConsumingRegistryDB(db).setCertificatesUsedForWh(_assetId, _consumed);
-    }
-*/
 
     /// @notice Gets an asset
     /// @param _assetId The id belonging to an entry in the asset registry
@@ -116,7 +94,8 @@ contract AssetConsumingRegistryLogic is AssetLogic, AssetConsumingInterface {
             matcher: _matcher,
             propertiesDocumentHash: _propertiesDocumentHash,
             url: _url,
-            marketLookupContract: 0x0
+            marketLookupContract: 0x0,
+            bundled: false
         });
 
         AssetConsumingDB.Asset memory _asset = AssetConsumingDB.Asset(
