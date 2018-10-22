@@ -24,6 +24,7 @@ interface AssetGeneralInterface {
     function getMarketLookupContract(uint _assetId) external view returns (address);
     function getAssetListLength() external view returns (uint);
 
+    function getAssetOwner(uint _assetId) external view returns (address);
     function addMatcher(uint _assetId, address _new) external ;
     function getMatcher(uint _assetId) external view returns(address[]);
     function removeMatcher(uint _assetId, address _remove) external;

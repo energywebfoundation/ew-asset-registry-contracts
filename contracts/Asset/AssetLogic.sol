@@ -197,4 +197,8 @@ contract AssetLogic is RoleManagement, Updatable, AssetGeneralInterface, AssetGe
         marketLookupContract = a.marketLookupContract;
         bundled = a.bundled;
     }
+
+    function getAssetOwner(uint _assetId) external view returns (address){
+        return db.getAssetGeneral(_assetId).owner;
+    }
 }
