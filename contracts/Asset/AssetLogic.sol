@@ -180,7 +180,5 @@ contract AssetLogic is RoleManagement, Updatable, AssetGeneralInterface, AssetGe
             oldMeterRead, 
             _newMeterRead
         );
-        
-
     } 
 }

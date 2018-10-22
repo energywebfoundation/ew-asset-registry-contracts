@@ -84,13 +84,14 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
     }
 
    
+    /*
     /// @notice Gets the last filehash 
     /// @param _assetId The id belonging to an entry in the asset registry
     /// @return The last smartmeterread-filehash
     function getLastSmartMeterReadFileHash(uint _assetId) external view returns (string){
         return db.getLastSmartMeterReadFileHash(_assetId);
     }
-
+    */
     function checkMatcherAmount(address[] _matcher) internal view {
         require(_matcher.length <= AssetContractLookup(owner).maxMatcherPerAsset(),"addMatcher: too many matcher already");
 
