@@ -53,7 +53,7 @@ interface AssetDbInterface {
     function removeMatcher(uint _assetId, address _removal) public returns (bool);
 
     function setSmartMeterRead(uint _assetId, uint lastSmartMeterReadWh, string _lastSmartMeterReadFileHash) external;
-    function getLastMeterReadingAndHash(uint _assetId) external returns (uint _lastSmartMeterReadWh, string _lastSmartMeterReadFileHash);
+    function getLastMeterReadingAndHash(uint _assetId) external view returns (uint _lastSmartMeterReadWh, string _lastSmartMeterReadFileHash);
 
     function getAssetListLength() external view returns (uint);
 }

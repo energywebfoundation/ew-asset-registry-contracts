@@ -58,7 +58,7 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
         external
         isInitialized
     {
-        setSmartMeterReadInternal(_assetId, _newMeterRead, _lastSmartMeterReadFileHash);
+        uint createdPower = setSmartMeterReadInternal(_assetId, _newMeterRead, _lastSmartMeterReadFileHash);
 
         AssetProducingDB.Asset memory asset = AssetProducingDB(db).getAssetById(_assetId);
 
@@ -67,13 +67,13 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
             if (asset.assetGeneral.bundled) {
                 EnergyCertificateBundleInterface(OriginContractLookupInterface(asset.assetGeneral.marketLookupContract).originLogicRegistry()).createBundle(
                     _assetId, 
-                    _newMeterRead - oldMeterRead 
+                    createdPower
                 ); 
                 
             } else {
                 CertificateInterface(OriginContractLookupInterface(asset.assetGeneral.marketLookupContract).originLogicRegistry()).createCertificate(
                     _assetId, 
-                    _newMeterRead - oldMeterRead
+                    createdPower
                 ); 
             }
         }

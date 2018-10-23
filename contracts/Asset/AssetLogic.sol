@@ -152,7 +152,7 @@ function checkAssetExist(address _smartMeter) public view returns (bool);
         uint _assetId, 
         uint _newMeterRead, 
         string _smartMeterReadFileHash
-    ) internal {
+    ) internal returns (uint){
 
         AssetGeneralStructContract.AssetGeneral memory asset = db.getAssetGeneral(_assetId);
         require(asset.smartMeter == msg.sender,"saveSmartMeterRead: wrong sender");
@@ -170,6 +170,8 @@ function checkAssetExist(address _smartMeter) public view returns (bool);
             oldMeterRead, 
             _newMeterRead
         );
+
+        return (_newMeterRead-oldMeterRead);
     } 
 
     function getAssetGeneral(uint _assetId) external view returns (

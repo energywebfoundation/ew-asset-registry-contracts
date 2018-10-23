@@ -26,5 +26,4 @@ interface AssetProducingInterface {
     function getAssetById(uint _assetId) external view returns (AssetProducingDB.Asset);
     function getAssetBySmartMeter(address _smartMeter) external view returns (AssetProducingDB.Asset);
     function checkAssetExist(address _smartMeter) public view returns (bool);
-    
 }
