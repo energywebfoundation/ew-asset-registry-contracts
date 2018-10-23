@@ -102,12 +102,14 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
         require (isRole(RoleManagement.Role.AssetAdmin, msg.sender),"user does not have the required role"); 
     }
 
+    /*
     function checkBeforeCreation(address[] _matcher, address _owner, address _smartMeter) internal view {
         require(_matcher.length <= AssetContractLookup(owner).maxMatcherPerAsset(),"addMatcher: too many matcher already");
         require (isRole(RoleManagement.Role.AssetManager, _owner),"user does not have the required role"); 
         require (isRole(RoleManagement.Role.AssetAdmin, msg.sender),"user does not have the required role"); 
         require(!checkAssetExist(_smartMeter));
     }
+    */
 
     function createAsset(  
         address _smartMeter,
@@ -119,6 +121,7 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
         uint _numOwnerChanges
     ) 
         external 
+        returns (uint _assetId)
     {
         checkBeforeCreation(_matcher, _owner, _smartMeter);
 
@@ -141,9 +144,9 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
             }
         );
 
-        uint assetId =  AssetProducingDB(db).addFullAsset(_asset);
+        _assetId =  AssetProducingDB(db).addFullAsset(_asset);
 
-        emit LogAssetCreated(msg.sender, assetId);
+        emit LogAssetCreated(msg.sender, _assetId);
         
     }
 

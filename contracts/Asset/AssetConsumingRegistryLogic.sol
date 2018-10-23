@@ -78,12 +78,10 @@ contract AssetConsumingRegistryLogic is AssetLogic, AssetConsumingInterface {
         string _url
     ) 
         external 
-        userHasRole(RoleManagement.Role.AssetManager, _owner)
-        onlyRole(RoleManagement.Role.AssetAdmin)
-
+        returns (uint _assetId)
     {
-        require(_matcher.length <= AssetContractLookup(owner).maxMatcherPerAsset(),"addMatcher: too many matcher already");
-        require(!checkAssetExist(_smartMeter),"smartmeter does already exist");
+
+        checkBeforeCreation(_matcher, _owner, _smartMeter);
 
         AssetGeneral memory a = AssetGeneral({
             smartMeter: _smartMeter,
@@ -102,7 +100,8 @@ contract AssetConsumingRegistryLogic is AssetLogic, AssetConsumingInterface {
             {assetGeneral: a}
         );
 
-        emit LogAssetCreated(msg.sender, AssetConsumingDB(db).addFullAsset(_asset));
+        _assetId = AssetConsumingDB(db).addFullAsset(_asset);
+        emit LogAssetCreated(msg.sender,_assetId);
     }
 
     function checkAssetExist(address _smartMeter) public view returns (bool){

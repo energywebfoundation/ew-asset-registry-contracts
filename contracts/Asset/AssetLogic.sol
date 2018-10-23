@@ -36,6 +36,7 @@ contract AssetLogic is RoleManagement, Updatable, AssetGeneralInterface, AssetGe
         uint _newMeterRead
     );
 
+function checkAssetExist(address _smartMeter) public view returns (bool);
 
     AssetDbInterface public db;
 
@@ -200,5 +201,17 @@ contract AssetLogic is RoleManagement, Updatable, AssetGeneralInterface, AssetGe
 
     function getAssetOwner(uint _assetId) external view returns (address){
         return db.getAssetGeneral(_assetId).owner;
+    }
+
+    function getLastMeterReadingAndHash(uint _assetId) external view returns (uint _lastSmartMeterReadWh, string _lastSmartMeterReadFileHash)
+    {
+        return db.getLastMeterReadingAndHash(_assetId);
+    }
+
+    function checkBeforeCreation(address[] _matcher, address _owner, address _smartMeter) internal view {
+        require(_matcher.length <= AssetContractLookup(owner).maxMatcherPerAsset(),"addMatcher: too many matcher already");
+        require (isRole(RoleManagement.Role.AssetManager, _owner),"user does not have the required role"); 
+        require (isRole(RoleManagement.Role.AssetAdmin, msg.sender),"user does not have the required role"); 
+        require(!checkAssetExist(_smartMeter),"smartmeter does already exist");
     }
 }

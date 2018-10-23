@@ -407,7 +407,7 @@ describe('AssetProducingLogic', () => {
         const tx = await assetProducingLogic.saveSmartMeterRead(
             0,
             200,
-            'lastSmartMeterReadFileHash',
+            'lastSmartMeterReadFileHash#2',
             { privateKey: assetSmartmeterPK });
 
         const event = (await assetProducingLogic.getAllLogNewMeterReadEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
@@ -745,7 +745,7 @@ describe('AssetProducingLogic', () => {
             1: assetOwnerAddress,
             2: '200',
             3: true,
-            4: 'lastSmartMeterReadFileHash',
+            4: 'lastSmartMeterReadFileHash#2',
             5:
                 ['0x1000000000000000000000000000000000000000',
                     '0x1000000000000000000000000000000000000001',
@@ -765,7 +765,7 @@ describe('AssetProducingLogic', () => {
             owner: assetOwnerAddress,
             lastSmartMeterReadWh: '200',
             active: true,
-            lastSmartMeterReadFileHash: 'lastSmartMeterReadFileHash',
+            lastSmartMeterReadFileHash: 'lastSmartMeterReadFileHash#2',
             matcher:
                 ['0x1000000000000000000000000000000000000000',
                     '0x1000000000000000000000000000000000000001',
@@ -1099,7 +1099,7 @@ describe('AssetProducingLogic', () => {
             1: assetOwnerAddress,
             2: '200',
             3: true,
-            4: 'lastSmartMeterReadFileHash',
+            4: 'lastSmartMeterReadFileHash#2',
             5: [],
             6: 'propertiesDocumentHash',
             7: 'url',
@@ -1109,7 +1109,7 @@ describe('AssetProducingLogic', () => {
             owner: assetOwnerAddress,
             lastSmartMeterReadWh: '200',
             active: true,
-            lastSmartMeterReadFileHash: 'lastSmartMeterReadFileHash',
+            lastSmartMeterReadFileHash: 'lastSmartMeterReadFileHash#2',
             matcher: [],
             propertiesDocumentHash: 'propertiesDocumentHash',
             url: 'url',
@@ -1132,12 +1132,41 @@ describe('AssetProducingLogic', () => {
         assert.equal(ag.owner, assetOwnerAddress);
         assert.equal(ag.lastSmartMeterReadWh, 200);
         assert.isTrue(ag.active);
-        assert.equal(ag.lastSmartMeterReadFileHash, 'lastSmartMeterReadFileHash');
+        assert.equal(ag.lastSmartMeterReadFileHash, 'lastSmartMeterReadFileHash#2');
         assert.deepEqual(ag.matcher, []);
         assert.equal(ag.propertiesDocumentHash, 'propertiesDocumentHash');
         assert.equal(ag.url, 'url');
         assert.equal(ag.marketLookupContract, '0x1000000000000000000000000000000000000005');
         assert.isTrue(ag.bundled);
+
+    });
+
+    it('should return the correct latest hashes + meterreadings', async () => {
+
+        assert.deepEqual(await assetProducingLogic.getLastMeterReadingAndHash(0), {
+            0: '200',
+            1: 'lastSmartMeterReadFileHash#2',
+            _lastSmartMeterReadWh: '200',
+            _lastSmartMeterReadFileHash: 'lastSmartMeterReadFileHash#2',
+        });
+
+        assert.deepEqual(await assetProducingLogic.getLastMeterReadingAndHash(1), {
+            0: '0',
+            1: '',
+            _lastSmartMeterReadWh: '0',
+            _lastSmartMeterReadFileHash: '',
+        });
+
+        it('should fail when trying to return latest hash + meterreading of a non existing asset', async () => {
+            let failed = false;
+
+            try {
+                await assetProducingLogic.getLastMeterReadingAndHash(2);
+            } catch (ex) {
+                failed = true;
+            }
+            assert.isTrue(failed);
+        });
 
     });
 

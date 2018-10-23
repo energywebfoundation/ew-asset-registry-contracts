@@ -114,13 +114,19 @@ contract AssetGeneralDB is Owned, AssetGeneralStructContract, AssetDbInterface {
 
     function setSmartMeterRead(
         uint _assetId, 
-        uint lastSmartMeterReadWh, 
+        uint _lastSmartMeterReadWh, 
         string _lastSmartMeterReadFileHash)
     external
     onlyOwner
     {
         AssetGeneral storage general = getAssetGeneralInternal(_assetId);
-        general.lastSmartMeterReadWh = lastSmartMeterReadWh;
+        general.lastSmartMeterReadWh = _lastSmartMeterReadWh;
         general.lastSmartMeterReadFileHash = _lastSmartMeterReadFileHash;
+    }
+
+    function getLastMeterReadingAndHash(uint _assetId) external onlyOwner returns (uint _lastSmartMeterReadWh, string _lastSmartMeterReadFileHash) {
+        AssetGeneral memory general = getAssetGeneralInternal(_assetId);
+        _lastSmartMeterReadWh = general.lastSmartMeterReadWh;
+        _lastSmartMeterReadFileHash = general.lastSmartMeterReadFileHash;
     }
 }

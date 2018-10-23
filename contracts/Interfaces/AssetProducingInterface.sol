@@ -22,7 +22,7 @@ import "../../contracts/Asset/AssetProducingDB.sol";
 /// @title this interface defines the functions of the AssetContractLookup-Contract 
 interface AssetProducingInterface {
     function saveSmartMeterRead(uint _assetId, uint _newMeterRead, string _lastSmartMeterReadFileHash) external;
-    function createAsset(address _smartMeter, address _owner, bool _active, address[] _matcher, string _propertiesDocumentHash, string _url, uint _numOwnerChanges) external; 
+    function createAsset(address _smartMeter, address _owner, bool _active, address[] _matcher, string _propertiesDocumentHash, string _url, uint _numOwnerChanges) external returns (uint); 
     function getAssetById(uint _assetId) external view returns (AssetProducingDB.Asset);
     function getAssetBySmartMeter(address _smartMeter) external view returns (AssetProducingDB.Asset);
     function checkAssetExist(address _smartMeter) public view returns (bool);
