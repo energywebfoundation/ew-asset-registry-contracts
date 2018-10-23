@@ -67,17 +67,13 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
             if (asset.assetGeneral.bundled) {
                 EnergyCertificateBundleInterface(OriginContractLookupInterface(asset.assetGeneral.marketLookupContract).originLogicRegistry()).createBundle(
                     _assetId, 
-                    _newMeterRead - oldMeterRead, 
-                    asset.maxOwnerChanges,  
-                    asset.assetGeneral.matcher
+                    _newMeterRead - oldMeterRead 
                 ); 
                 
             } else {
                 CertificateInterface(OriginContractLookupInterface(asset.assetGeneral.marketLookupContract).originLogicRegistry()).createCertificate(
                     _assetId, 
-                    _newMeterRead - oldMeterRead, 
-                    asset.maxOwnerChanges,  
-                    asset.assetGeneral.matcher
+                    _newMeterRead - oldMeterRead
                 ); 
             }
         }
