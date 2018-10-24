@@ -53,6 +53,7 @@ contract AssetProducingDB is AssetGeneralDB {
         smartMeterAddresses.push(smartMeter);
     }
 
+    
     function getAssetListLength() external view returns (uint){
         return smartMeterAddresses.length;
     }

@@ -36,6 +36,7 @@ contract AssetLogic is RoleManagement, Updatable, AssetGeneralInterface, AssetGe
         uint _newMeterRead
     );
 
+
 function checkAssetExist(address _smartMeter) public view returns (bool);
 
     AssetDbInterface public db;
@@ -75,6 +76,11 @@ function checkAssetExist(address _smartMeter) public view returns (bool);
         } 
     }
 
+     ///@brief Set the Market Lookup Contract object
+     ///
+     ///@param _assetId 
+     ///@param _marketContractLookup 
+     ///@return function 
     function setMarketLookupContract(uint _assetId, address _marketContractLookup)
         external   
     {

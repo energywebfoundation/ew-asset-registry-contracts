@@ -20,7 +20,7 @@ pragma experimental ABIEncoderV2;
 
 import "../../contracts/Asset/AssetGeneralDB.sol";
 
-/// @title The Database contract for the Asset Registration
+/// @title The Database contract for the consuming registration
 /// @notice This contract only provides getter and setter methods
 contract AssetConsumingDB is AssetGeneralDB {
 
@@ -28,20 +28,46 @@ contract AssetConsumingDB is AssetGeneralDB {
         AssetGeneral assetGeneral;
     }
 
+    /// @dev mapping for smartMeter-address => Asset
     mapping(address => Asset) internal assetMapping;
+    /// @dev list of all the smartMeters already used
     address[] internal smartMeterAddresses;
 
+    /// @notice constructor
+    /// @param _assetLogic the address of the AssetConsumingRegistryLogic-contract that owns this contract
     constructor(address _assetLogic) AssetGeneralDB(_assetLogic) public {}
 
-    function getAssetGeneralInternal(uint _assetId) 
-        internal 
-        view 
-        returns (AssetGeneral storage general) 
-    {
-        address smAddress = smartMeterAddresses[_assetId];
-        return assetMapping[smAddress].assetGeneral;
+    /**
+        external functions
+     */
+
+    /// @notice function to get an asset by its id
+    /// @param _assetId the id of the asset
+    /// @return the Asset-struct
+    function getAssetById(uint _assetId) external onlyOwner view returns (Asset) {
+        return assetMapping[smartMeterAddresses[_assetId]];
+    }
+        
+    /// @notice function to get an asset by its smartmeter
+    /// @param _smartMeter the smartmeter of the asset 
+    /// @return the Asset-struct
+    function getAssetBySmartMeter(address _smartMeter) external onlyOwner view returns (Asset) {
+        return assetMapping[_smartMeter];
     }
 
+    /// @notice function to get the amount of already onboarded assets
+    /// @return the amount of assets already deployed
+    function getAssetListLength() external onlyOwner view returns (uint){
+        return smartMeterAddresses.length;
+    }
+
+    /**
+        public functions
+     */
+
+    /// @notice function to add a new asset to the list of assets
+    /// @dev it's using a public-modifier in order to avoid an UnimplementedFeatureError
+    /// @return the assetId beloning the asset 
     function addFullAsset(Asset _a) 
         public
         onlyOwner
@@ -53,16 +79,23 @@ contract AssetConsumingDB is AssetGeneralDB {
         smartMeterAddresses.push(smartMeter);
     }
 
-    function getAssetListLength() external onlyOwner view returns (uint){
-        return smartMeterAddresses.length;
+    /**
+        internal functions
+     */
+
+    /// @notice function to get the AssetGeneral-struct part of an asset
+    /// @dev internal as we have to pass it as storage
+    /// @dev implements abstract funciton of AssetGeneralDB
+    /// @param _assetId the id of the asset
+    /// @return the AssetGeneral-Struct as storage-pointer
+    function getAssetGeneralInternal(uint _assetId) 
+        internal 
+        view 
+        returns (AssetGeneral storage general) 
+    {
+        address smAddress = smartMeterAddresses[_assetId];
+        return assetMapping[smAddress].assetGeneral;
     }
 
-    function getAssetById(uint _assetId) external onlyOwner view returns (Asset) {
-        return assetMapping[smartMeterAddresses[_assetId]];
-    }
-
-    function getAssetBySmartMeter(address _smartMeter) external onlyOwner view returns (Asset) {
-        return assetMapping[_smartMeter];
-    }
     
 }

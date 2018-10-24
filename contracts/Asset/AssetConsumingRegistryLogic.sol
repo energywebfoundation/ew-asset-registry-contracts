@@ -22,33 +22,45 @@ import "../../contracts/AssetContractLookup.sol";
 import "../../contracts/Asset/AssetLogic.sol";
 import "../../contracts/Interfaces/AssetConsumingInterface.sol";
 
-/// @title The logic contract for the asset registration
+/// @title The logic contract for the consuming asset registration
 /// @notice This contract provides the logic that determines how the data is stored
 /// @dev Needs a valid AssetConsumingRegistryDB contract to function correctly 
 contract AssetConsumingRegistryLogic is AssetLogic, AssetConsumingInterface {
 
     event LogNewMeterRead(uint indexed _assetId, uint _oldMeterRead, uint _newMeterRead);
 
+    /// @param the userContract-lookup contract (used for RoleManagement)
     UserContractLookupInterface public userContractLookup;
+
     /// @notice Constructor
-    constructor(UserContractLookupInterface _userContractLookup, AssetContractLookupInterface _assetContractLookup) RoleManagement(_userContractLookup,_assetContractLookup) public {
+    /// @param _userContractLookup userContract-lookup contract
+    /// @param _assetContractLookup assetContract-lookup contracts (that should own this contract)
+    constructor(
+        UserContractLookupInterface _userContractLookup, 
+        AssetContractLookupInterface _assetContractLookup
+    ) 
+        RoleManagement(_userContractLookup,_assetContractLookup) 
+        public 
+    {
         userContractLookup = _userContractLookup;
     }
 
+    /**
+        external functions
+    */
     /// @notice Logs meter read
     /// @param _assetId The id belonging to an entry in the asset registry
     /// @param _newMeterRead The current meter read of the asset
     /// @param _lastSmartMeterReadFileHash Last meter read file hash
     function saveSmartMeterRead(uint _assetId, uint _newMeterRead, string _lastSmartMeterReadFileHash) 
         external
-        isInitialized
     {
         setSmartMeterReadInternal(_assetId, _newMeterRead, _lastSmartMeterReadFileHash);
     }
 
-    /// @notice Gets an asset
+    /// @notice function to get an asset by its id
     /// @param _assetId The id belonging to an entry in the asset registry
-    /// @return Full informations of an asset
+    /// @return AssetConsumingDB.Asset-struct
     function getAssetById(uint _assetId) 
         external
         view
@@ -59,16 +71,16 @@ contract AssetConsumingRegistryLogic is AssetLogic, AssetConsumingInterface {
         return AssetConsumingDB(db).getAssetById(_assetId);
     }
 
-    function getAssetBySmartMeter(address _smartMeter) 
-        external 
-        view 
-        returns (  
-            AssetConsumingDB.Asset
-        )
-    {
-        return AssetConsumingDB(db).getAssetBySmartMeter(_smartMeter);
-    }
-
+    /// @notice function to create a new asset
+    /// @dev this function will fail when a different onboarded assets already uses the same smartmeter address
+    /// @dev this function will fail when the owner does not have the correct rights
+    /// @param _smartMeter the smartmeter of the asset 
+    /// @param _owner the owner of the asset (onboarded user in the user-contracts)
+    /// @param _active flag whether this asset is active already
+    /// @param _matcher array with matcher-addresses 
+    /// @param _propertiesDocumentHash hash of the documents with the corresponding properties
+    /// @param _url address where to find that document
+    /// @return returns the asset-id of the newly onboarded asset
     function createAsset(  
         address _smartMeter,
         address _owner,
@@ -80,7 +92,7 @@ contract AssetConsumingRegistryLogic is AssetLogic, AssetConsumingInterface {
         external 
         returns (uint _assetId)
     {
-
+        // in order to avoid "stack too deep" erros we're checking all the modifiers in a seperate function
         checkBeforeCreation(_matcher, _owner, _smartMeter);
 
         AssetGeneral memory a = AssetGeneral({
@@ -104,6 +116,25 @@ contract AssetConsumingRegistryLogic is AssetLogic, AssetConsumingInterface {
         emit LogAssetCreated(msg.sender,_assetId);
     }
 
+    /// @notice function to get an asset by its smartmeter
+    /// @param _smartMeter the smartmeter belonging to an asset
+    /// @return AssetConsumingDB.Asset-struct
+    function getAssetBySmartMeter(address _smartMeter) 
+        external 
+        view 
+        returns (  
+            AssetConsumingDB.Asset
+        )
+    {
+        return AssetConsumingDB(db).getAssetBySmartMeter(_smartMeter);
+    }
+
+    /**
+        public functions
+    */
+    /// @notice function to check whether an asset exists already for the provided smartmeter
+    /// @param _smartMeter the smartmeter of the asset ot be deployed 
+    /// @return true if smartMeter is already in use, false otherwhise
     function checkAssetExist(address _smartMeter) public view returns (bool){
         return checkAssetGeneralExistingStatus(AssetConsumingDB(db).getAssetBySmartMeter(_smartMeter).assetGeneral);
     }

@@ -21,85 +21,190 @@ import "ew-utils-general-contracts/Msc/Owned.sol";
 import "../../contracts/Interfaces/AssetDbInterface.sol";
 import "../../contracts/Asset/AssetGeneralStructContract.sol";
 
+/// @title an (abstract) contract for handling all the AssetGeneral-Struct specific tasks in the database contract
+/// @notice this funciton provides getter and setter functions for the AssetGeneral-struct.
+/// @dev in order to use this contract, inherhit it and implement the abstract functions (e.g. AssetConsumingDB and AssetProducingDB)
 contract AssetGeneralDB is Owned, AssetGeneralStructContract, AssetDbInterface {
 
+    /// @notice constructor
+    /// @param _assetLogic the AssetLogic-contract-address owning this contract
     constructor(address _assetLogic) Owned(_assetLogic) public { }
 
+    /**
+        abstract funcitons to be implemented
+     */
+
+    /// @notice gets the AssetGeneral-struct as storage-pointer
+    /// @dev function has to be implemented in order to create a deployable bytecode
+    /// @param _assetId the assetId of the AssetGeneral-struct to be returned
+    /// @return returns a storage pointer to a AssetGeneral struct
     function getAssetGeneralInternal(uint _assetId) internal view returns (AssetGeneral storage general);
+    
+    /// @notice gets the amount of onboarded assets
+    /// @dev this function has to be implemetned in order to create a deployable bytecode
+    /// @return retuns the amount of onboarded assets
     function getAssetListLength() external view returns (uint);
 
-    function setActive(uint _assetId, bool _active) external onlyOwner {
-        getAssetGeneralInternal(_assetId).active = _active;
-    }
-
-    function getActive(uint _assetId) external onlyOwner view returns (bool) {
-        return getAssetGeneralInternal(_assetId).active;
-    }
-
-    function getAssetGeneral(uint _assetId) external onlyOwner view returns (AssetGeneral general){
-        return getAssetGeneralInternal(_assetId);
-    }
-
-    function getIsBundled(uint _assetId) external onlyOwner view returns (bool) {
-        return getAssetGeneralInternal(_assetId).bundled;
-    }
-
-    function setIsBundled(uint _assetId, bool _bundled) external onlyOwner {
-        getAssetGeneralInternal(_assetId).bundled = _bundled;
-    }
-
-    function setLastSmartMeterReadFileHash(uint _assetId, string _lastSmartMeterReadFileHash) external onlyOwner {
-        getAssetGeneralInternal(_assetId).lastSmartMeterReadFileHash = _lastSmartMeterReadFileHash;
-    }
-
-    function getLastSmartMeterReadFileHash(uint _assetId) external onlyOwner view returns (string) {
-        return getAssetGeneralInternal(_assetId).lastSmartMeterReadFileHash;
-    }
-
-    function setLastSmartMeterReadWh(uint _assetId, uint _lastSmartMeterReadWh) external onlyOwner {
-        getAssetGeneralInternal(_assetId).lastSmartMeterReadWh = _lastSmartMeterReadWh;
-    }
-
-    function getLastSmartMeterReadWh(uint _assetId) external onlyOwner view returns (uint) {
-        return getAssetGeneralInternal(_assetId).lastSmartMeterReadWh;
-    }
-
-    function setAssetOwner(uint _assetId, address _owner) external onlyOwner {
-        getAssetGeneralInternal(_assetId).owner = _owner;
-    }
-
-    function getAssetOwner(uint _assetId) external onlyOwner view returns (address){
-        return getAssetGeneralInternal(_assetId).owner;
-    }
-
-    function setSmartMeter(uint _assetId, address _smartMeter) external onlyOwner {
-        getAssetGeneralInternal(_assetId).smartMeter = _smartMeter;
-    }
-
-    function getSmartMeter(uint _assetId) external onlyOwner view returns (address){
-        return getAssetGeneralInternal(_assetId).smartMeter;
-    }
-
-    function setMarketLookupContract(uint _assetId, address _marketLookupContract) external onlyOwner {
-        getAssetGeneralInternal(_assetId).marketLookupContract = _marketLookupContract;
-    }
-
-    function getMarketLookupContract(uint _assetId) external onlyOwner view returns (address){ 
-        return getAssetGeneralInternal(_assetId).marketLookupContract;
-    }
-
+    /**
+        external functions
+    */
+    
+    /// @notice adds a new matcher to an asset
+    /// @param _assetId the id of an asset
+    /// @param _matcher the address of the matcher to be added
     function addMatcher(uint _assetId, address _matcher) external onlyOwner {
         getAssetGeneralInternal(_assetId).matcher.push(_matcher);
     }
 
+    /// @notice set the flag whether an asset is active
+    /// @param _assetId the id of an asset
+    /// @param _active the flag whether the asset is active
+    function setActive(uint _assetId, bool _active) external onlyOwner {
+        getAssetGeneralInternal(_assetId).active = _active;
+    }
+
+    /// @notice set the Asset-owner
+    /// @param _assetId the id of an asset
+    /// @param _owner the new owner address
+    function setAssetOwner(uint _assetId, address _owner) external onlyOwner {
+        getAssetGeneralInternal(_assetId).owner = _owner;
+    }
+
+    
+    /// @notice set the flag whether an asset is bundled to energy
+    /// @param _assetId the id of an asset
+    /// @param _bundled the bundle flag
+    function setIsBundled(uint _assetId, bool _bundled) external onlyOwner {
+        getAssetGeneralInternal(_assetId).bundled = _bundled;
+    }
+
+    /// @notice set the Last SmartMeterRead File-Hash 
+    /// @param _assetId the id of an asset
+    /// @param _lastSmartMeterReadFileHash the hash of the last meterreading 
+    function setLastSmartMeterReadFileHash(uint _assetId, string _lastSmartMeterReadFileHash) external onlyOwner {
+        getAssetGeneralInternal(_assetId).lastSmartMeterReadFileHash = _lastSmartMeterReadFileHash;
+    }
+
+    /// @notice set the new meterreading
+    /// @param _assetId the id of an asset
+    /// @param _lastSmartMeterReadWh the new meterreadind
+    function setLastSmartMeterReadWh(uint _assetId, uint _lastSmartMeterReadWh) external onlyOwner {
+        getAssetGeneralInternal(_assetId).lastSmartMeterReadWh = _lastSmartMeterReadWh;
+    }
+
+    /// @notice set the markup-lookup-contract
+    /// @param _assetId the id of an asset
+    /// @param _marketLookupContract the new market-lookup-contract
+    function setMarketLookupContract(uint _assetId, address _marketLookupContract) external onlyOwner {
+        getAssetGeneralInternal(_assetId).marketLookupContract = _marketLookupContract;
+    }
+
+    /// @notice set the meterreading and the filehash at the same time
+    /// @dev can be used to save gas-costs when setting a meterreading in the logic contract
+    /// @param _assetId the id of an asset
+    /// @param _lastSmartMeterReadWh the meterreading
+    /// @param _lastSmartMeterReadFileHash the filehash
+    function setSmartMeterRead(
+        uint _assetId, 
+        uint _lastSmartMeterReadWh, 
+        string _lastSmartMeterReadFileHash
+    )
+        external
+        onlyOwner
+    {
+        AssetGeneral storage general = getAssetGeneralInternal(_assetId);
+        general.lastSmartMeterReadWh = _lastSmartMeterReadWh;
+        general.lastSmartMeterReadFileHash = _lastSmartMeterReadFileHash;
+    }
+
+    /// @notice gets the active flag
+    /// @param _assetId the id of an asset
+    /// @return flag whether an active is marked as active
+    function getActive(uint _assetId) external onlyOwner view returns (bool) {
+        return getAssetGeneralInternal(_assetId).active;
+    }
+
+    /// @notice gets the AssetGeneral-struct as memory 
+    /// @param _assetId the id of an asset
+    /// @return the AssetGeneral-struct as memory
+    function getAssetGeneral(uint _assetId) external onlyOwner view returns (AssetGeneral general){
+        return getAssetGeneralInternal(_assetId);
+    }
+
+    /// @notice gets the bundled-flag of an asset
+    /// @param _assetId the id of an asset
+    /// @return bundle-flag of an asset
+    function getIsBundled(uint _assetId) external onlyOwner view returns (bool) {
+        return getAssetGeneralInternal(_assetId).bundled;
+    }
+
+    /// @notice gets the last filehash of a meterreading
+    /// @param _assetId the id of an asset
+    /// @return filehash of the last meterreading
+    function getLastSmartMeterReadFileHash(uint _assetId) external onlyOwner view returns (string) {
+        return getAssetGeneralInternal(_assetId).lastSmartMeterReadFileHash;
+    }
+
+    /// @notice gets the current meterreading
+    /// @param _assetId the id of an asset
+    /// @return the current meterreading
+    function getLastSmartMeterReadWh(uint _assetId) external onlyOwner view returns (uint) {
+        return getAssetGeneralInternal(_assetId).lastSmartMeterReadWh;
+    }
+
+    /// @notice gets the asset-owner
+    /// @param _assetId the id of an asset
+    /// @return the eth-address of the owner of the asset
+    function getAssetOwner(uint _assetId) external onlyOwner view returns (address){
+        return getAssetGeneralInternal(_assetId).owner;
+    }
+
+    /// @notice gets the last meterreading and its filehash 
+    /// @dev this function can be used to save gas-costs when calling it
+    /// @param _assetId the id of an asset
+    /// @return last meterreading and its filehash
+    function getLastMeterReadingAndHash(uint _assetId) external onlyOwner view returns (uint _lastSmartMeterReadWh, string _lastSmartMeterReadFileHash) {
+        AssetGeneral memory general = getAssetGeneralInternal(_assetId);
+        _lastSmartMeterReadWh = general.lastSmartMeterReadWh;
+        _lastSmartMeterReadFileHash = general.lastSmartMeterReadFileHash;
+    }
+
+    /// @notice gets the market-lookup-contract 
+    /// @param _assetId the id of an asset
+    /// @return the market-lookup-contractaddress
+    function getMarketLookupContract(uint _assetId) external onlyOwner view returns (address){ 
+        return getAssetGeneralInternal(_assetId).marketLookupContract;
+    }
+
+    /// @notice gets the matcher-array 
+    /// @param _assetId the id of an asset
+    /// @return array with matcher-addresses
     function getMatcher(uint _assetId) external onlyOwner view returns (address[]) {
         return getAssetGeneralInternal(_assetId).matcher;
     }
 
+    /// @notice gets the smartmeter of an asset 
+    /// @param _assetId the id of an asset
+    /// @return eth-address of the smartmeter
+    function getSmartMeter(uint _assetId) external onlyOwner view returns (address){
+        return getAssetGeneralInternal(_assetId).smartMeter;
+    }
+
+    /**
+        public functions
+    */
+    
+    /// @notice Set the matcher-array
+    /// @param _assetId the id of an asset
+    /// @param _matcher array with matcher-addresses
     function setMatcher(uint _assetId, address[] _matcher) public onlyOwner {
         getAssetGeneralInternal(_assetId).matcher = _matcher;
     } 
 
+    /// @notice removes an matcher-address from the matcher-array of an asset 
+    /// @param _assetId the id of an asset
+    /// @param _removal the address to be removed
+    /// @return flag whether the to be removed address was found in the array
     function removeMatcher(uint _assetId, address _removal) public onlyOwner returns (bool) {
         
         address[] storage matchers = getAssetGeneralInternal(_assetId).matcher;
@@ -112,21 +217,7 @@ contract AssetGeneralDB is Owned, AssetGeneralStructContract, AssetDbInterface {
         }
     }
 
-    function setSmartMeterRead(
-        uint _assetId, 
-        uint _lastSmartMeterReadWh, 
-        string _lastSmartMeterReadFileHash)
-    external
-    onlyOwner
-    {
-        AssetGeneral storage general = getAssetGeneralInternal(_assetId);
-        general.lastSmartMeterReadWh = _lastSmartMeterReadWh;
-        general.lastSmartMeterReadFileHash = _lastSmartMeterReadFileHash;
-    }
 
-    function getLastMeterReadingAndHash(uint _assetId) external onlyOwner view returns (uint _lastSmartMeterReadWh, string _lastSmartMeterReadFileHash) {
-        AssetGeneral memory general = getAssetGeneralInternal(_assetId);
-        _lastSmartMeterReadWh = general.lastSmartMeterReadWh;
-        _lastSmartMeterReadFileHash = general.lastSmartMeterReadFileHash;
-    }
+
+  
 }
