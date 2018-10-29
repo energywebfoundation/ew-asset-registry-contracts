@@ -111,6 +111,7 @@ describe('AssetContractLookup', () => {
         }
         catch (ex) {
             failed = true;
+            assert.include(ex.message, 'alreadny initialized');
         }
 
         assert.isTrue(failed);
@@ -127,6 +128,7 @@ describe('AssetContractLookup', () => {
         }
         catch (ex) {
             failed = true;
+            assert.include(ex.message, 'msg.sender is not owner');
         }
 
         assert.isTrue(failed);
@@ -155,6 +157,7 @@ describe('AssetContractLookup', () => {
         }
         catch (ex) {
             failed = true;
+            assert.include(ex.message, 'msg.sender is not owner');
         }
 
         assert.isTrue(failed);

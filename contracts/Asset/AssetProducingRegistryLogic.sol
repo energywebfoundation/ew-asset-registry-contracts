@@ -42,14 +42,16 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
     UserContractLookupInterface public userContractLookup;
     
     /// @notice Constructor
+    /// @param _userContractLookup usercontract-lookup-contract
+    /// @param _assetContractLookup the asset-lookup-contract
     constructor(UserContractLookupInterface _userContractLookup, AssetContractLookupInterface _assetContractLookup) RoleManagement(_userContractLookup,_assetContractLookup) public {
         userContractLookup = _userContractLookup;
     }
 
-    /// @notice Logs meter read
-    /// @param _assetId The id belonging to an entry in the asset registry
-    /// @param _newMeterRead The current meter read of the asset
-    /// @param _lastSmartMeterReadFileHash Last meter read file hash
+	/// @notice Logs meter read
+	/// @param _assetId The id belonging to an entry in the asset registry
+	/// @param _newMeterRead The current meter read of the asset
+	/// @param _lastSmartMeterReadFileHash Last meter read file hash
     function saveSmartMeterRead(
         uint _assetId, 
         uint _newMeterRead, 
@@ -78,36 +80,17 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
             }
         }
     }
-
-   
-    /*
-    /// @notice Gets the last filehash 
-    /// @param _assetId The id belonging to an entry in the asset registry
-    /// @return The last smartmeterread-filehash
-    function getLastSmartMeterReadFileHash(uint _assetId) external view returns (string){
-        return db.getLastSmartMeterReadFileHash(_assetId);
-    }
-    */
-    function checkMatcherAmount(address[] _matcher) internal view {
-        require(_matcher.length <= AssetContractLookup(owner).maxMatcherPerAsset(),"addMatcher: too many matcher already");
-
-    } 
-
-    function checkRoles(address _owner) internal view {
-        require (isRole(RoleManagement.Role.AssetManager, _owner),"user does not have the required role"); 
-        require (isRole(RoleManagement.Role.AssetAdmin, msg.sender),"user does not have the required role"); 
-    }
-
-    /*
-    function checkBeforeCreation(address[] _matcher, address _owner, address _smartMeter) internal view {
-        require(_matcher.length <= AssetContractLookup(owner).maxMatcherPerAsset(),"addMatcher: too many matcher already");
-        require (isRole(RoleManagement.Role.AssetManager, _owner),"user does not have the required role"); 
-        require (isRole(RoleManagement.Role.AssetAdmin, msg.sender),"user does not have the required role"); 
-        require(!checkAssetExist(_smartMeter));
-    }
-    */
-
-    function createAsset(  
+    
+	/// @notice creates an asset with the provided parameters
+	/// @param _smartMeter smartmeter of the asset
+	/// @param _owner asset-owner
+	/// @param _active flag if the asset is already active
+	/// @param _matcher array with matcher addresses
+	/// @param _propertiesDocumentHash hash of the document with the properties of an asset
+	/// @param _url where to find the documentHash
+	/// @param _numOwnerChanges allowed amount of owner-changes of certificates created by the asset
+	/// @return generated asset-id
+	function createAsset(  
         address _smartMeter,
         address _owner,
         bool _active,
@@ -146,9 +129,9 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
         
     }
 
-    /// @notice Gets an asset
-    /// @param _assetId The id belonging to an entry in the asset registry
-    /// @return Full informations of an asset
+	/// @notice Gets an asset
+	/// @param _assetId The id belonging to an entry in the asset registry
+	/// @return Full informations of an asset
     function getAssetById(uint _assetId) 
         external
         view
@@ -159,6 +142,9 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
         return AssetProducingDB(db).getAssetById(_assetId);
     }
 
+	/// @notice gets an asset by its smartmeter
+	/// @param _smartMeter smartmeter used for by the asset
+	/// @return Asset-Struct
     function getAssetBySmartMeter(address _smartMeter) 
         external 
         view 
@@ -169,10 +155,16 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
         return AssetProducingDB(db).getAssetBySmartMeter(_smartMeter);
     }
 
+	/// @notice checks whether an assets with the provided smartmeter already exists
+	/// @param _smartMeter smartmter of an asset
+	/// @return whether there is already an asset with that smartmeter
     function checkAssetExist(address _smartMeter) public view returns (bool){
         return checkAssetGeneralExistingStatus(AssetProducingDB(db).getAssetBySmartMeter(_smartMeter).assetGeneral);
     }
 
+	/// @notice enabes or disables the bundle-functionality
+	/// @param _assetId the id of an asset
+	/// @param _active whether the asset should use bundle functions
     function setBundleActive(uint _assetId, bool _active) external {
         
         require(msg.sender == db.getAssetOwner(_assetId),"setBundleActive: not the owner");   

@@ -29,11 +29,16 @@ contract AssetProducingDB is AssetGeneralDB {
         uint maxOwnerChanges;
     }
 
+    /// @dev mapping for smartMeter-address => Asset
     mapping(address => Asset) internal assetMapping;
+    /// @dev list of all the smartMeters already used
     address[] internal smartMeterAddresses;
 
     constructor(address _assetLogic) AssetGeneralDB(_assetLogic) public {}
-
+	
+	/// @notice gets the assetstruct
+	/// @param _assetId the id of an asset
+	/// @return the Asset-struct
     function getAssetGeneralInternal(uint _assetId) 
         internal 
         view 
@@ -42,6 +47,9 @@ contract AssetProducingDB is AssetGeneralDB {
         return assetMapping[smartMeterAddresses[_assetId]].assetGeneral;
     }
 
+	/// @notice adds a complete sset to the mapping and array
+	/// @param _a the complete asset
+	/// @return the generated assetId
     function addFullAsset(Asset _a) 
         public
         onlyOwner
@@ -53,15 +61,22 @@ contract AssetProducingDB is AssetGeneralDB {
         smartMeterAddresses.push(smartMeter);
     }
 
-    
+	/// @notice gets amount of already onboarded assets
+	/// @return amount of already onboarded assets
     function getAssetListLength() external view returns (uint){
         return smartMeterAddresses.length;
     }
 
+	/// @notice gets an asset by its id
+	/// @param _assetId the id of an asset
+	/// @return Asset-struct
     function getAssetById(uint _assetId) external view returns (Asset) {
         return assetMapping[smartMeterAddresses[_assetId]];
     }
 
+	/// @notice gets an asset by its smartmeter
+	/// @param _smartMeter the smartmeter of an asset
+	/// @return Asset-Struct
     function getAssetBySmartMeter(address _smartMeter) external onlyOwner view returns (Asset) {
         return assetMapping[_smartMeter];
     }

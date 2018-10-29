@@ -21,10 +21,35 @@ import "../../contracts/Asset/AssetConsumingDB.sol";
 
 /// @title this interface defines the functions of the AssetContractLookup-Contract 
 interface AssetConsumingInterface {
-
+	
+	/// @notice saves the meterreading
+	/// @param _assetId id of an asset
+	/// @param _newMeterRead new meterreading in wh
+	/// @param _lastSmartMeterReadFileHash filehash
     function saveSmartMeterRead(uint _assetId, uint _newMeterRead, string _lastSmartMeterReadFileHash) external;
+
+	/// @notice gets an asset by its id
+	/// @param _assetId id of an asset
+	/// @return Asset-Consuming-Struct
     function getAssetById(uint _assetId) external view returns ( AssetConsumingDB.Asset);
+	
+	/// @notice gets an asset by its smartmeter
+	/// @param _smartMeter smartmeter of an asset
+	/// @return Asset-Consuming-Struct
     function getAssetBySmartMeter(address _smartMeter) external view returns (AssetConsumingDB.Asset);
+	
+    /// @notice creates an asset
+	/// @param _smartMeter smartmeter address
+	/// @param _owner owner of the asset (eth-address)
+	/// @param _active active-flag
+	/// @param _matcher matcher-array
+	/// @param _propertiesDocumentHash hash of the document with the asset-properties
+	/// @param _url where to find the document 
+	/// @return generated asset-id
     function createAsset(address _smartMeter, address _owner, bool _active, address[] _matcher, string _propertiesDocumentHash, string _url) external returns (uint); 
+	
+    /// @notice checks whether an asset already exists
+	/// @param _smartMeter smartmeter of an asset
+	/// @return whether an asset already exists
     function checkAssetExist(address _smartMeter) public view returns (bool);
 }

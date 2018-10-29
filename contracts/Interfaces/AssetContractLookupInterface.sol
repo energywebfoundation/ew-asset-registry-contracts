@@ -20,8 +20,19 @@ pragma experimental ABIEncoderV2;
 /// @title this interface defines the functions of the AssetContractLookup-Contract 
 interface AssetContractLookupInterface {
    
+	/// @notice gets the assetConsumingRegistryLogic-address
+	/// @return assetConsumingRegistryLogic-contract-address
     function assetConsumingRegistry() external view returns (address);
+	
+	/// @notice gets the assetProducingRegistryLogic-address
+	/// @return assetProducingRegistryLogic-contract-address
     function assetProducingRegistry() external view returns (address);
+
+	/// @notice gets the userLogic-address
+	/// @return userLogic-contract-address
     function userRegistry() external view returns (address);
+
+	/// @notice gets the allowed maximum of matchers per asset
+	/// @return allowed maximum of matchers per asset
     function maxMatcherPerAsset() external view returns (uint);
 }

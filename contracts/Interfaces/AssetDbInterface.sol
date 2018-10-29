@@ -21,39 +21,110 @@ import "../../contracts/Asset/AssetGeneralStructContract.sol";
 
 /// @title this interface defines the functions that both consuming and producing assets are sharing
 interface AssetDbInterface {
-
+    
+	/// @notice gets the AssetGeneral struct of an asset
+	/// @param _assetId the id of asset
+	/// @return AssetGeneral struct
     function getAssetGeneral(uint _assetId) external  view returns (AssetGeneralStructContract.AssetGeneral general);
-   
+	
+	/// @notice sets the active flag of an asset
+	/// @param _assetId the id of an asset
+	/// @param _active active flag
     function setActive(uint _assetId, bool _active) external;
+	
+	/// @notice gets the active flag of an asset
+	/// @param _assetId the id of an asset
+	/// @return active flag
     function getActive(uint _assetId) external view returns (bool);
 
+	/// @notice sets a new filehash of a meterreading
+	/// @param _assetId the id of an asset
+	/// @param _lastSmartMeterReadFileHash new filehash
     function setLastSmartMeterReadFileHash(uint _assetId, string _lastSmartMeterReadFileHash) external;
+	
+	/// @notice gets the latest filehash
+	/// @param _assetId the id of an sset
+	/// @return filehash
     function getLastSmartMeterReadFileHash(uint _assetId) external view returns (string);
 
+	/// @notice seta a new meterreading
+	/// @param _assetId the id of an asset
+	/// @param _lastSmartMeterReadWh the new meterreading
     function setLastSmartMeterReadWh(uint _assetId, uint _lastSmartMeterReadWh) external;
+	
+	/// @notice gets the current meterreading
+	/// @param _assetId the id of an asset
+	/// @return current meterreading
     function getLastSmartMeterReadWh(uint _assetId) external  view returns (uint);
 
+	/// @notice sets the asset owner
+	/// @param _assetId the id of an asset
+	/// @param _owner the asset-owner
     function setAssetOwner(uint _assetId, address _owner) external;
+	
+	/// @notice gets the asset owner
+	/// @param _assetId the id of an asset
+	/// @return the asset owner
     function getAssetOwner(uint _assetId) external view returns (address);
 
-    function setSmartMeter(uint _assetId, address _smartMeter) external;
+	/// @notice gets the smart meter
+	/// @param _assetId the id of an asset
+	/// @return the smartmeter
     function getSmartMeter(uint _assetId) external view returns (address);
 
-
+	/// @notice gets the bundled flag
+	/// @param _assetId the id of an asset
+	/// @return the bundled flag
     function getIsBundled(uint _assetId) external view returns (bool);
+	
+	/// @notice sets the bundled flag
+	/// @param _assetId the id of an asset
+	/// @param _bundled bundled flag
     function setIsBundled(uint _assetId, bool _bundled) external;
 
+	/// @notice set the marketLookup contract
+	/// @param _assetId the id of an asset
+	/// @param _marketLookupContract new marketLookup contract
     function setMarketLookupContract(uint _assetId, address _marketLookupContract) external;
+	
+	/// @notice gets the marketLookup contract
+	/// @param _assetId the id of an asset
+	/// @return the marketcontract lookup
     function getMarketLookupContract(uint _assetId) external view returns (address);
 
+	/// @notice adds a matcher-address to an asset
+	/// @param _assetId the id of an asset
+	/// @param _matcher matcher-address
     function addMatcher(uint _assetId, address _matcher) external;
+	
+	/// @notice gets the matcher array of an asset
+	/// @param _assetId the id of an asset
+	/// @return matcher-array
     function getMatcher(uint _assetId) external view returns (address[]);
 
+	/// @notice sets the matcher array
+	/// @param _assetId id of an asset
+	/// @param _matcher matcher-array
     function setMatcher(uint _assetId, address[] _matcher) public;
+	
+	/// @notice removes a matcher-address from the matcher-array of an asset
+	/// @param _assetId the id of an asset
+	/// @param _removal address to be removed
+	/// @return whether the to be removed address was found in the array
     function removeMatcher(uint _assetId, address _removal) public returns (bool);
 
-    function setSmartMeterRead(uint _assetId, uint lastSmartMeterReadWh, string _lastSmartMeterReadFileHash) external;
+	/// @notice sets a new meterreading and its filehash
+	/// @param _assetId the id of an asset
+	/// @param lastSmartMeterReadWh meterreading in Wh
+	/// @param _lastSmartMeterReadFileHash filehash of the meterreading
+	function setSmartMeterRead(uint _assetId, uint lastSmartMeterReadWh, string _lastSmartMeterReadFileHash) external;
+	
+	/// @notice gets the latest meterreading and its hash
+	/// @param _assetId id of an asset
+	/// @return meterreading and its hash
     function getLastMeterReadingAndHash(uint _assetId) external view returns (uint _lastSmartMeterReadWh, string _lastSmartMeterReadFileHash);
 
+	/// @notice get the amount of onboarded assets
+	/// @return the amount of onboarded assets
     function getAssetListLength() external view returns (uint);
 }

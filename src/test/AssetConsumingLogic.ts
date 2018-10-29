@@ -79,7 +79,7 @@ describe('AssetConsumingLogic', () => {
         const deployedContracts = await migrateAssetRegistryContracts(web3, userContractLookupAddr);
 
         userContractLookup = new UserContractLookup((web3 as any),
-            userContractLookupAddr);
+                                                    userContractLookupAddr);
         assetContractLookup = new AssetContractLookup((web3 as any));
         assetProducingLogic = new AssetProducingRegistryLogic((web3 as any));
         assetConsumingLogic = new AssetConsumingRegistryLogic((web3 as any));
@@ -137,7 +137,7 @@ describe('AssetConsumingLogic', () => {
                 { privateKey: privateKeyDeployment });
         }
         catch (ex) {
-            if (isGanache) assert.include(ex.message, 'revert user does not have the required role');
+            assert.include(ex.message, 'user does not have the required role');
 
             failed = true;
         }
@@ -158,7 +158,7 @@ describe('AssetConsumingLogic', () => {
                 { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
         }
         catch (ex) {
-            if (isGanache) assert.include(ex.message, 'revert user does not have the required role');
+            assert.include(ex.message, 'user does not have the required role');
             failed = true;
         }
         assert.isTrue(failed);
@@ -187,7 +187,7 @@ describe('AssetConsumingLogic', () => {
                 { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
         }
         catch (ex) {
-            if (isGanache) assert.include(ex.message, 'revert user does not have the required role');
+            assert.include(ex.message, 'user does not have the required role');
             failed = true;
         }
         assert.isTrue(failed);
@@ -252,7 +252,7 @@ describe('AssetConsumingLogic', () => {
                 'urlString',
                 { privateKey: privateKeyDeployment });
         } catch (ex) {
-            if (isGanache) assert.include(ex.message, ' revert smartmeter does already exist');
+            assert.include(ex.message, 'smartmeter does already exist');
             failed = true;
         }
 
@@ -324,7 +324,7 @@ describe('AssetConsumingLogic', () => {
                 'newMeterReadFileHash',
                 { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
         } catch (ex) {
-            if (isGanache) assert.include(ex.message, 'revert saveSmartMeterRead: wrong sender');
+            assert.include(ex.message, 'saveSmartMeterRead: wrong sender');
 
             failed = true;
         }
@@ -391,8 +391,7 @@ describe('AssetConsumingLogic', () => {
                 { privateKey: assetSmartmeterPK });
         }
         catch (ex) {
-            if (isGanache) assert.include(ex.message, 'revert saveSmartMeterRead: meterread too low');
-
+            assert.include(ex.message, 'saveSmartMeterRead: meterread too low');
             failed = true;
         }
 
@@ -458,9 +457,9 @@ describe('AssetConsumingLogic', () => {
 
         try {
             await assetConsumingLogic.setMarketLookupContract(0, '0x1000000000000000000000000000000000000005',
-                { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
+                                                              { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
         } catch (ex) {
-            if (isGanache) assert.include(ex.message, 'revert sender is not the assetOwner');
+            assert.include(ex.message, 'sender is not the assetOwner');
 
             failed = true;
         }
@@ -474,9 +473,9 @@ describe('AssetConsumingLogic', () => {
 
         try {
             await assetConsumingLogic.setMarketLookupContract(0, '0x1000000000000000000000000000000000000005',
-                { privateKey: matcherPK });
+                                                              { privateKey: matcherPK });
         } catch (ex) {
-            if (isGanache) assert.include(ex.message, 'revert sender is not the assetOwner');
+            assert.include(ex.message, 'sender is not the assetOwner');
 
             failed = true;
         }
@@ -490,9 +489,9 @@ describe('AssetConsumingLogic', () => {
 
         try {
             await assetConsumingLogic.setMarketLookupContract(0, '0x1000000000000000000000000000000000000005',
-                { privateKey: privateKeyDeployment });
+                                                              { privateKey: privateKeyDeployment });
         } catch (ex) {
-            if (isGanache) assert.include(ex.message, 'revert sender is not the assetOwner');
+            assert.include(ex.message, 'sender is not the assetOwner');
 
             failed = true;
         }
@@ -503,7 +502,7 @@ describe('AssetConsumingLogic', () => {
     it('should set marketAddress', async () => {
 
         await assetConsumingLogic.setMarketLookupContract(0, '0x1000000000000000000000000000000000000005',
-            { privateKey: assetOwnerPK });
+                                                          { privateKey: assetOwnerPK });
 
         assert.equal(await assetConsumingLogic.getMarketLookupContract(0), '0x1000000000000000000000000000000000000005');
 
@@ -543,7 +542,7 @@ describe('AssetConsumingLogic', () => {
                 '0x1000000000000000000000000000000000000000',
                 { privateKey: privateKeyDeployment });
         } catch (ex) {
-            if (isGanache) assert.include(ex.message, 'revert addMatcher: not the owner');
+            assert.include(ex.message, 'addMatcher: not the owner');
 
             failed = true;
         }
@@ -561,7 +560,7 @@ describe('AssetConsumingLogic', () => {
                 '0x1000000000000000000000000000000000000000',
                 { privateKey: matcherPK });
         } catch (ex) {
-            if (isGanache) assert.include(ex.message, 'revert addMatcher: not the owner');
+            assert.include(ex.message, 'addMatcher: not the owner');
 
             failed = true;
         }
@@ -614,7 +613,7 @@ describe('AssetConsumingLogic', () => {
                 matcher,
                 { privateKey: privateKeyDeployment });
         } catch (ex) {
-            if (isGanache) assert.include(ex.message, 'revert removeMatcher: not the owner');
+            assert.include(ex.message, 'removeMatcher: not the owner');
 
             failed = true;
         }
@@ -632,7 +631,7 @@ describe('AssetConsumingLogic', () => {
                 matcher,
                 { privateKey: matcherPK });
         } catch (ex) {
-            if (isGanache) assert.include(ex.message, 'revert removeMatcher: not the owner');
+            assert.include(ex.message, 'removeMatcher: not the owner');
 
             failed = true;
         }
@@ -685,7 +684,7 @@ describe('AssetConsumingLogic', () => {
                 matcher,
                 { privateKey: assetOwnerPK });
         } catch (ex) {
-            if (isGanache) assert.include(ex.message, 'revert removeMatcher: address not found');
+            assert.include(ex.message, 'removeMatcher: address not found');
             failed = true;
         }
 
@@ -793,7 +792,7 @@ describe('AssetConsumingLogic', () => {
                 '0x1000000000000000000000000000000000000010',
                 { privateKey: assetOwnerPK });
         } catch (ex) {
-            if (isGanache) assert.include(ex.message, 'revert addMatcher: too many matcher already');
+            assert.include(ex.message, 'addMatcher: too many matcher already');
 
             failed = true;
         }
@@ -842,7 +841,7 @@ describe('AssetConsumingLogic', () => {
         }
         catch (ex) {
             failed = true;
-            if (isGanache) assert.include(ex.message, 'revert addMatcher: too many matcher already');
+            assert.include(ex.message, 'addMatcher: too many matcher already');
 
         }
         assert.isTrue(failed);
@@ -913,7 +912,6 @@ describe('AssetConsumingLogic', () => {
         assert.equal(ag.url, 'urlString#2');
         assert.equal(ag.marketLookupContract, '0x0000000000000000000000000000000000000000');
         assert.isFalse(ag.bundled);
-
 
     });
 });

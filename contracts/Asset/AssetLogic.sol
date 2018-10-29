@@ -36,8 +36,14 @@ contract AssetLogic is RoleManagement, Updatable, AssetGeneralInterface, AssetGe
         uint _newMeterRead
     );
 
-
-function checkAssetExist(address _smartMeter) public view returns (bool);
+    /**
+        abtract functions
+     */
+     
+	/// @notice checks whether an asset with the provided smartmeter aready exists
+	/// @param _smartMeter provided smartmeter
+	/// @return whether there is already an asset with that smartmeter
+    function checkAssetExist(address _smartMeter) public view returns (bool);
 
     AssetDbInterface public db;
 
@@ -49,9 +55,9 @@ function checkAssetExist(address _smartMeter) public view returns (bool);
     /**
         external functions
     */
-    /// @notice function toinizialize the database, can only be called once
-    /// @param _dbAddress address of the database contract
-    function init(address _dbAddress, address _admin) 
+	/// @notice function toinizialize the database, can only be called once
+	/// @param _dbAddress address of the database contract
+    function init(address _dbAddress, address ) 
         external
         onlyOwner
     {
@@ -59,9 +65,9 @@ function checkAssetExist(address _smartMeter) public view returns (bool);
         db = AssetDbInterface(_dbAddress);
     }
 
-    /// @notice Sets active to false
-    /// @param _assetId The id belonging to an entry in the asset registry
-    /// @param _active flag if the asset is asset or not
+	/// @notice Sets active to false
+	/// @param _assetId The id belonging to an entry in the asset registry
+	/// @param _active flag if the asset is asset or not
     function setActive(uint _assetId, bool _active)
         external
         isInitialized
@@ -76,11 +82,9 @@ function checkAssetExist(address _smartMeter) public view returns (bool);
         } 
     }
 
-     ///@brief Set the Market Lookup Contract object
-     ///
-     ///@param _assetId 
-     ///@param _marketContractLookup 
-     ///@return function 
+	/// @notice Set the MarketLookup contract contract
+	/// @param _assetId the id belonging ti an entry in the asset registry
+	/// @param _marketContractLookup the MarketLookup-contract
     function setMarketLookupContract(uint _assetId, address _marketContractLookup)
         external   
     {
@@ -88,8 +92,8 @@ function checkAssetExist(address _smartMeter) public view returns (bool);
         db.setMarketLookupContract(_assetId, _marketContractLookup);
     }
 
-    /// @notice Updates the logic contract
-    /// @param _newLogic Address of the new logic contract
+	/// @notice Updates the logic contract
+	/// @param _newLogic address of the new logic contract
     function update(address _newLogic) 
         external
         onlyOwner
@@ -97,9 +101,9 @@ function checkAssetExist(address _smartMeter) public view returns (bool);
         Owned(db).changeOwner(_newLogic);
     }
 
-    /// @notice Function to get the amount of all assets
-    /// @dev needed to iterate though all the asset
-    /// @return the amount of all assets
+	/// @notice gets the amount of all assets
+	/// @dev needed to iterate though all the asset
+	/// @return the amount of all assets
     function getAssetListLength()
         external
         view 
@@ -108,7 +112,9 @@ function checkAssetExist(address _smartMeter) public view returns (bool);
        return db.getAssetListLength();
     }
 
-
+	/// @notice gets the MarketLookup-contract
+	/// @param _assetId the id of an asset
+	/// @return contract address of the MarketLookup-contract
     function getMarketLookupContract(uint _assetId)
         external   
         view
@@ -117,6 +123,9 @@ function checkAssetExist(address _smartMeter) public view returns (bool);
         return db.getMarketLookupContract(_assetId);
     }
 
+	/// @notice gets the matcher-array
+	/// @param _assetId the id of an asset
+	/// @return array with matcher-addresses
     function getMatcher(uint _assetId)
         external
         view
@@ -125,6 +134,9 @@ function checkAssetExist(address _smartMeter) public view returns (bool);
         return db.getMatcher(_assetId);
     }
 
+	/// @notice adds a new matcher-address to the matcher-array of an asset
+	/// @param _assetId the id of an asset
+	/// @param _new matcher-address to be included
     function addMatcher(uint _assetId, address _new) external {
         
         require(msg.sender == db.getAssetOwner(_assetId),"addMatcher: not the owner");    
@@ -133,13 +145,18 @@ function checkAssetExist(address _smartMeter) public view returns (bool);
             
         db.addMatcher(_assetId,_new);    
     }
- 
+
+	/// @notice removes a matcher address from the array of an asset 
+	/// @param _assetId the id of an asset
+	/// @param _remove matcher address to be removed
     function removeMatcher(uint _assetId, address _remove) external  {
         require(msg.sender == db.getAssetOwner(_assetId),"removeMatcher: not the owner");
         require(db.removeMatcher(_assetId,_remove),"removeMatcher: address not found");
     
     }
-
+	/// @notice checks whether an AssetGeneral-struct already exists
+	/// @param _assetGeneral the AssetGeneral-struct
+	/// @return whether that struct exists
     function checkAssetGeneralExistingStatus(AssetGeneralStructContract.AssetGeneral _assetGeneral) internal pure returns (bool) {
         return !(
             _assetGeneral.smartMeter == 0x0 
@@ -154,6 +171,10 @@ function checkAssetExist(address _smartMeter) public view returns (bool);
         );
     }
 
+	/// @notice sets a new meterreading for an asset
+	/// @param _assetId the id of an asset 
+	/// @param _newMeterRead the new meterreading in Wh
+	/// @param _smartMeterReadFileHash the filehash for the meterreading
     function setSmartMeterReadInternal(
         uint _assetId, 
         uint _newMeterRead, 
@@ -178,8 +199,11 @@ function checkAssetExist(address _smartMeter) public view returns (bool);
         );
 
         return (_newMeterRead-oldMeterRead);
-    } 
+    }
 
+	/// @notice gets the general information of an asset
+	/// @param _assetId the id of an asset
+	/// @return the AssetGeneral-Stuct as separate returnvalues
     function getAssetGeneral(uint _assetId) external view returns (
         address smartMeter,
         address owner,
@@ -207,19 +231,30 @@ function checkAssetExist(address _smartMeter) public view returns (bool);
         bundled = a.bundled;
     }
 
+	/// @notice gets the owner-address of an asset
+	/// @param _assetId the id of an asset
+	/// @return the owner of that asset
     function getAssetOwner(uint _assetId) external view returns (address){
         return db.getAssetGeneral(_assetId).owner;
     }
 
+	/// @notice gets the last meterreading and its hash
+	/// @param _assetId the id of an asset
+	/// @return the last meterreading and its hash
     function getLastMeterReadingAndHash(uint _assetId) external view returns (uint _lastSmartMeterReadWh, string _lastSmartMeterReadFileHash)
     {
         return db.getLastMeterReadingAndHash(_assetId);
     }
 
+	/// @notice runs some checks before creating an asset
+	/// @param _matcher the matcher array
+	/// @param _owner the address of the asset-owner
+	/// @param _smartMeter the smartmeter used by that asset
     function checkBeforeCreation(address[] _matcher, address _owner, address _smartMeter) internal view {
         require(_matcher.length <= AssetContractLookup(owner).maxMatcherPerAsset(),"addMatcher: too many matcher already");
         require (isRole(RoleManagement.Role.AssetManager, _owner),"user does not have the required role"); 
         require (isRole(RoleManagement.Role.AssetAdmin, msg.sender),"user does not have the required role"); 
         require(!checkAssetExist(_smartMeter),"smartmeter does already exist");
     }
+
 }

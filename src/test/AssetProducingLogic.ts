@@ -27,6 +27,7 @@ import { AssetProducingRegistryLogic } from '../wrappedContracts/AssetProducingR
 import { AssetConsumingDB } from '../wrappedContracts/AssetConsumingDB';
 import { AssetProducingDB } from '../wrappedContracts/AssetProducingDB';
 import { fail } from 'assert';
+import { JsonRPCResponse } from '../types/types';
 
 describe('AssetProducingLogic', () => {
 
@@ -60,10 +61,9 @@ describe('AssetProducingLogic', () => {
     const assetSmartmeter2PK = '0x554f3c1470e9f66ed2cf1dc260d2f4de77a816af2883679b1dc68c551e8fa5ed';
     const assetSmartMeter2 = web3.eth.accounts.privateKeyToAccount(assetSmartmeter2PK).address;
 
-    let isGanache: boolean;
+    let isGanache;
 
     it('should deploy the contracts', async () => {
-
         isGanache = (await getClientVersion(web3)).includes('EthereumJS');
 
         const userContracts = await migrateUserRegistryContracts(web3);
@@ -146,9 +146,8 @@ describe('AssetProducingLogic', () => {
         catch (ex) {
             failed = true;
 
-            if (isGanache) {
-                assert.include(ex.message, 'revert user does not have the required role');
-            }
+            assert.include(ex.message, 'user does not have the required role');
+
         }
         assert.isTrue(failed);
     });
@@ -169,9 +168,8 @@ describe('AssetProducingLogic', () => {
         }
         catch (ex) {
             failed = true;
-            if (isGanache) {
-                assert.include(ex.message, 'revert user does not have the required role');
-            }
+            assert.include(ex.message, 'user does not have the required role');
+
         }
         assert.isTrue(failed);
     });
@@ -201,9 +199,8 @@ describe('AssetProducingLogic', () => {
         }
         catch (ex) {
             failed = true;
-            if (isGanache) {
-                assert.include(ex.message, 'revert user does not have the required role');
-            }
+            assert.include(ex.message, 'user does not have the required role');
+
         }
         assert.isTrue(failed);
     });
@@ -351,9 +348,8 @@ describe('AssetProducingLogic', () => {
                 { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
         } catch (ex) {
             failed = true;
-            if (isGanache) {
-                assert.include(ex.message, 'revert saveSmartMeterRead: wrong sender');
-            }
+            assert.include(ex.message, 'saveSmartMeterRead: wrong sender');
+
         }
 
         assert.isTrue(failed);
@@ -394,15 +390,14 @@ describe('AssetProducingLogic', () => {
                 { privateKey: assetSmartmeterPK });
         } catch (ex) {
             failed = true;
-            if (isGanache) {
-                assert.include(ex.message, 'revert saveSmartMeterRead: meterread too low');
-            }
+            assert.include(ex.message, 'saveSmartMeterRead: meterread too low');
+
         }
 
         assert.isTrue(failed);
     });
 
-    it('should be able to log withs aveSmartMeterRead again using the right values', async () => {
+    it('should be able to log with saveSmartMeterRead again using the right values', async () => {
 
         const tx = await assetProducingLogic.saveSmartMeterRead(
             0,
@@ -433,9 +428,8 @@ describe('AssetProducingLogic', () => {
             await assetProducingLogic.setActive(0, false, { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
         } catch (ex) {
             failed = true;
-            if (isGanache) {
-                assert.include(ex.message, 'revert user does not have the required role');
-            }
+            assert.include(ex.message, 'user does not have the required role');
+
         }
 
         assert.isTrue(failed);
@@ -473,9 +467,8 @@ describe('AssetProducingLogic', () => {
                 { privateKey: assetSmartmeterPK });
         } catch (ex) {
             failed = true;
-            if (isGanache) {
-                assert.include(ex.message, 'revert saveSmartMeterRead: asset not active');
-            }
+            assert.include(ex.message, 'saveSmartMeterRead: asset not active');
+
         }
 
         assert.isTrue(failed);
@@ -489,9 +482,8 @@ describe('AssetProducingLogic', () => {
             await assetProducingLogic.setActive(0, true, { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
         } catch (ex) {
             failed = true;
-            if (isGanache) {
-                assert.include(ex.message, 'revert user does not have the required role');
-            }
+            assert.include(ex.message, 'user does not have the required role');
+
         }
 
         assert.isTrue(failed);
@@ -523,9 +515,8 @@ describe('AssetProducingLogic', () => {
             await assetProducingLogic.update('0x7110d0f07be70fc2a6c84fe66bf128593b2102fb', { privateKey: privateKeyDeployment });
         } catch (ex) {
             failed = true;
-            if (isGanache) {
-                assert.include(ex.message, 'revert msg.sender is not owner');
-            }
+            assert.include(ex.message, 'msg.sender is not owner');
+
         }
 
         assert.isTrue(failed);
@@ -547,6 +538,7 @@ describe('AssetProducingLogic', () => {
                                                               { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
         } catch (ex) {
             failed = true;
+            assert.include(ex.message, 'sender is not the assetOwner');
         }
 
         assert.isTrue(failed);
@@ -561,6 +553,8 @@ describe('AssetProducingLogic', () => {
                                                               { privateKey: matcherPK });
         } catch (ex) {
             failed = true;
+            assert.include(ex.message, 'sender is not the assetOwner');
+
         }
 
         assert.isTrue(failed);
@@ -575,6 +569,8 @@ describe('AssetProducingLogic', () => {
                                                               { privateKey: privateKeyDeployment });
         } catch (ex) {
             failed = true;
+            assert.include(ex.message, 'sender is not the assetOwner');
+
         }
 
         assert.isTrue(failed);
@@ -600,6 +596,7 @@ describe('AssetProducingLogic', () => {
                 { privateKey: privateKeyDeployment });
         } catch (ex) {
             failed = true;
+            assert.include(ex.message, 'addMatcher: not the owner');
         }
 
         assert.isTrue(failed);
@@ -616,6 +613,7 @@ describe('AssetProducingLogic', () => {
                 { privateKey: matcherPK });
         } catch (ex) {
             failed = true;
+            assert.include(ex.message, 'addMatcher: not the owner');
         }
 
         assert.isTrue(failed);
@@ -656,6 +654,7 @@ describe('AssetProducingLogic', () => {
                 { privateKey: privateKeyDeployment });
         } catch (ex) {
             failed = true;
+            assert.include(ex.message, 'removeMatcher: not the owner');
         }
 
         assert.isTrue(failed);
@@ -672,6 +671,8 @@ describe('AssetProducingLogic', () => {
                 { privateKey: matcherPK });
         } catch (ex) {
             failed = true;
+            assert.include(ex.message, 'removeMatcher: not the owner');
+
         }
 
         assert.isTrue(failed);
@@ -700,6 +701,7 @@ describe('AssetProducingLogic', () => {
                 { privateKey: assetOwnerPK });
         } catch (ex) {
             failed = true;
+            assert.include(ex.message, 'removeMatcher: address not found');
         }
 
         assert.isTrue(failed);
@@ -795,6 +797,7 @@ describe('AssetProducingLogic', () => {
                 { privateKey: assetOwnerPK });
         } catch (ex) {
             failed = true;
+            assert.include(ex.message, 'addMatcher: too many matcher already');
         }
 
         assert.isTrue(failed);
@@ -843,6 +846,8 @@ describe('AssetProducingLogic', () => {
         }
         catch (ex) {
             failed = true;
+            assert.include(ex.message, 'addMatcher: too many matcher already');
+
         }
         assert.isTrue(failed);
     });
@@ -1069,6 +1074,8 @@ describe('AssetProducingLogic', () => {
             await assetProducingLogic.setBundleActive(0, true, { privateKey: privateKeyDeployment });
         } catch (ex) {
             failed = true;
+            assert.include(ex.message, 'setBundleActive: not the owner');
+
         }
 
         assert.isTrue(failed);
@@ -1082,6 +1089,7 @@ describe('AssetProducingLogic', () => {
             await assetProducingLogic.setBundleActive(0, true, { privateKey: privateKeyDeployment });
         } catch (ex) {
             failed = true;
+            assert.include(ex.message, 'setBundleActive: not the owner');
         }
 
         assert.isTrue(failed);
