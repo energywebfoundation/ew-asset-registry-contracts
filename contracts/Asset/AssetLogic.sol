@@ -16,8 +16,8 @@
 
 pragma solidity ^0.4.24;
 
-import "ew-user-registry-contracts/Users/RoleManagement.sol";
-import "ew-utils-general-contracts/Interfaces/Updatable.sol";
+import "ew-user-registry-contracts/contracts/Users/RoleManagement.sol";
+import "ew-utils-general-contracts/contracts/Interfaces/Updatable.sol";
 import "../../contracts/Interfaces/AssetDbInterface.sol";
 import "../../contracts/Interfaces/AssetGeneralInterface.sol";
 import "../../contracts/AssetContractLookup.sol";
@@ -252,8 +252,8 @@ contract AssetLogic is RoleManagement, Updatable, AssetGeneralInterface, AssetGe
 	/// @param _smartMeter the smartmeter used by that asset
     function checkBeforeCreation(address[] _matcher, address _owner, address _smartMeter) internal view {
         require(_matcher.length <= AssetContractLookup(owner).maxMatcherPerAsset(),"addMatcher: too many matcher already");
-        require (isRole(RoleManagement.Role.AssetManager, _owner),"user does not have the required role"); 
-        require (isRole(RoleManagement.Role.AssetAdmin, msg.sender),"user does not have the required role"); 
+        require(isRole(RoleManagement.Role.AssetManager, _owner),"user does not have the required role"); 
+        require(isRole(RoleManagement.Role.AssetAdmin, msg.sender),"user does not have the required role"); 
         require(!checkAssetExist(_smartMeter),"smartmeter does already exist");
     }
 

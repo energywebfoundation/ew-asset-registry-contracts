@@ -17,7 +17,7 @@
 pragma solidity ^0.4.24;
 pragma experimental ABIEncoderV2;
 
-import "ew-utils-general-contracts/Msc/Owned.sol";
+import "ew-utils-general-contracts/contracts/Msc/Owned.sol";
 import "../../contracts/Interfaces/AssetDbInterface.sol";
 import "../../contracts/Asset/AssetGeneralStructContract.sol";
 
@@ -208,8 +208,10 @@ contract AssetGeneralDB is Owned, AssetGeneralStructContract, AssetDbInterface {
     function removeMatcher(uint _assetId, address _removal) public onlyOwner returns (bool) {
         
         address[] storage matchers = getAssetGeneralInternal(_assetId).matcher;
-        for (uint i = 0; i < matchers.length; i++){
-            if(matchers[i] == _removal){
+        for (uint i = 0; i < matchers.length; i++)
+        {
+            if(matchers[i] == _removal)
+            {
                 matchers[i] = matchers[matchers.length-1];
                 matchers.length--;
                 return true;

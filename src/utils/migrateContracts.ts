@@ -1,7 +1,6 @@
 import { Sloffle } from 'sloffle';
 import { Web3Type } from '../types/web3';
 import * as fs from 'fs';
-import { migrateUserRegistryContracts, UserLogic } from 'ew-user-registry-contracts';
 import { AssetContractLookup } from '../wrappedContracts/AssetContractLookup';
 import * as path from 'path';
 

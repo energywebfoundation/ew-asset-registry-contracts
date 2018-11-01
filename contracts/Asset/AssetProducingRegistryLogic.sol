@@ -19,12 +19,12 @@ pragma experimental ABIEncoderV2;
 
 import "../../contracts/Asset/AssetProducingDB.sol";
 import "../../contracts/AssetContractLookup.sol";
-import "ew-origin-contracts/Interfaces/CertificateInterface.sol";
-import "ew-origin-contracts/Interfaces/EnergyCertificateBundleInterface.sol";
-import "ew-origin-contracts/Interfaces/OriginContractLookupInterface.sol";
+import "ew-origin-contracts/contracts/Interfaces/CertificateInterface.sol";
+import "ew-origin-contracts/contracts/Interfaces/EnergyCertificateBundleInterface.sol";
+import "ew-origin-contracts/contracts/Interfaces/OriginContractLookupInterface.sol";
 
 import "../../contracts/Asset/AssetLogic.sol";
-import "ew-utils-general-contracts/Msc/Owned.sol";
+import "ew-utils-general-contracts/contracts/Msc/Owned.sol";
 import "../../contracts/Interfaces/AssetProducingInterface.sol";
 
 
