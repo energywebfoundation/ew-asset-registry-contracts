@@ -73,7 +73,7 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
                 ); 
                 
             } else {
-                CertificateInterface(OriginContractLookupInterface(asset.assetGeneral.marketLookupContract).originLogicRegistry()).createCertificate(
+                CertificateInterface(OriginContractLookupInterface(asset.assetGeneral.marketLookupContract).originLogicRegistry()).createCertificateExternal(
                     _assetId, 
                     createdPower
                 ); 
@@ -161,6 +161,11 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
     function checkAssetExist(address _smartMeter) public view returns (bool){
         return checkAssetGeneralExistingStatus(AssetProducingDB(address(db)).getAssetBySmartMeter(_smartMeter).assetGeneral);
     }
+
+    function checkAssetExistExternal(address _smartMeter) external view returns (bool) {
+        return checkAssetExist(_smartMeter);
+    }
+
 
 	/// @notice enabes or disables the bundle-functionality
 	/// @param _assetId the id of an asset

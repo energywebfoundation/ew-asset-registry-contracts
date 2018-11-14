@@ -105,13 +105,13 @@ interface AssetDbInterface {
 	/// @notice sets the matcher array
 	/// @param _assetId id of an asset
 	/// @param _matcher matcher-array
-    function setMatcher(uint _assetId, address[] memory _matcher) public;
+    function setMatcherExternal(uint _assetId, address[] calldata _matcher) external;
 	
 	/// @notice removes a matcher-address from the matcher-array of an asset
 	/// @param _assetId the id of an asset
 	/// @param _removal address to be removed
 	/// @return whether the to be removed address was found in the array
-    function removeMatcher(uint _assetId, address _removal) public returns (bool);
+    function removeMatcherExternal(uint _assetId, address _removal) external returns (bool);
 
 	/// @notice sets a new meterreading and its filehash
 	/// @param _assetId the id of an asset

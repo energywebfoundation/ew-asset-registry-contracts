@@ -24,15 +24,15 @@ import "../contracts/Interfaces/AssetContractLookupInterface.sol";
 /// @title Contract for storing the current logic-contracts-addresses for the certificate of origin
 contract AssetContractLookup is Owned, AssetContractLookupInterface {
 
-    Updatable public assetConsumingRegistry;
-    Updatable public assetProducingRegistry;
-    UserContractLookupInterface public userRegistry;
+    Updatable private assetConsumingRegistryContract;
+    Updatable private assetProducingRegistryContract;
+    UserContractLookupInterface private userRegistryContract;
 
-    uint public maxMatcherPerAsset;
+    uint private maxMatcherPerAssetNumber;
 
     /// @notice The constructor 
     constructor() Owned(msg.sender) public{
-        maxMatcherPerAsset = 10;
+        maxMatcherPerAssetNumber = 10;
     } 
 
     /// @notice function to initialize the contracts, setting the needed contract-addresses
@@ -50,18 +50,18 @@ contract AssetContractLookup is Owned, AssetContractLookupInterface {
     {
         require(    
             address(_userRegistry) != address(0) && address(_assetProducingRegistry) != address(0) && address(_assetConsumingRegistry) != address(0)
-            && address(userRegistry) == address(0) && address(assetProducingRegistry) == address(0) && address(assetConsumingRegistry) == address(0),
+            && address(userRegistryContract) == address(0) && address(assetProducingRegistryContract) == address(0) && address(assetConsumingRegistryContract) == address(0),
             "alreadny initialized"
         );
         require(_assetProducingDB != address(0), "assetProducingDB cannot be 0");
         require(_assetConsumingDB != address(0), "assetConsumingDB cannot be 0");
 
-        userRegistry = _userRegistry;
-        assetProducingRegistry = _assetProducingRegistry;
-        assetConsumingRegistry = _assetConsumingRegistry;
+        userRegistryContract = _userRegistry;
+        assetProducingRegistryContract = _assetProducingRegistry;
+        assetConsumingRegistryContract = _assetConsumingRegistry;
 
-        assetProducingRegistry.init(_assetProducingDB, msg.sender);
-        assetConsumingRegistry.init(_assetConsumingDB, msg.sender);
+        assetProducingRegistryContract.init(_assetProducingDB, msg.sender);
+        assetConsumingRegistryContract.init(_assetConsumingDB, msg.sender);
     }
 
     /// @notice function to update one or more logic-contracts
@@ -74,30 +74,30 @@ contract AssetContractLookup is Owned, AssetContractLookupInterface {
         onlyOwner 
     {
         if (address(_assetProducingRegistry) != address(0)) {
-            assetProducingRegistry.update(address(_assetProducingRegistry));
-            assetProducingRegistry = _assetProducingRegistry;
+            assetProducingRegistryContract.update(address(_assetProducingRegistry));
+            assetProducingRegistryContract = _assetProducingRegistry;
         }
 
         if(address(_assetConsumingRegistry) != address(0)) {
-            assetConsumingRegistry.update(address(_assetConsumingRegistry));
-            assetConsumingRegistry = _assetConsumingRegistry;
+            assetConsumingRegistryContract.update(address(_assetConsumingRegistry));
+            assetConsumingRegistryContract = _assetConsumingRegistry;
         }        
     }
 
     function assetConsumingRegistry() external view returns (address){
-        return address(assetConsumingRegistry);
+        return address(assetConsumingRegistryContract);
     }
 
     function assetProducingRegistry() external view returns (address){
-        return address(assetProducingRegistry);
+        return address(assetProducingRegistryContract);
     }
         
     function maxMatcherPerAsset() external view returns (uint){
-        return maxMatcherPerAsset;
+        return maxMatcherPerAssetNumber;
     }
 
     function userRegistry() external view returns (address){
-        return address(userRegistry);
+        return address(userRegistryContract);
     }
 
 }

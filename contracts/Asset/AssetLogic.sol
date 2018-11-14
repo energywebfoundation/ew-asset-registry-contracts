@@ -45,6 +45,7 @@ contract AssetLogic is RoleManagement, Updatable, AssetGeneralInterface, AssetGe
 	/// @return whether there is already an asset with that smartmeter
     function checkAssetExist(address _smartMeter) public view returns (bool);
 
+
     AssetDbInterface public db;
 
     modifier isInitialized {
@@ -151,7 +152,7 @@ contract AssetLogic is RoleManagement, Updatable, AssetGeneralInterface, AssetGe
 	/// @param _remove matcher address to be removed
     function removeMatcher(uint _assetId, address _remove) external  {
         require(msg.sender == db.getAssetOwner(_assetId),"removeMatcher: not the owner");
-        require(db.removeMatcher(_assetId,_remove),"removeMatcher: address not found");
+        require(db.removeMatcherExternal(_assetId,_remove),"removeMatcher: address not found");
     
     }
 	/// @notice checks whether an AssetGeneral-struct already exists

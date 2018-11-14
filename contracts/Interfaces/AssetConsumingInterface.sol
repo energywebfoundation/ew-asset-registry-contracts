@@ -51,5 +51,5 @@ interface AssetConsumingInterface {
     /// @notice checks whether an asset already exists
 	/// @param _smartMeter smartmeter of an asset
 	/// @return whether an asset already exists
-    function checkAssetExist(address _smartMeter) public view returns (bool);
+    function checkAssetExistExternal(address _smartMeter) external view returns (bool);
 }

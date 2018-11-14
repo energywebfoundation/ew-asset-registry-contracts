@@ -201,6 +201,14 @@ contract AssetGeneralDB is Owned, AssetGeneralStructContract, AssetDbInterface {
         getAssetGeneralInternal(_assetId).matcher = _matcher;
     } 
 
+    function setMatcherExternal(uint _assetId, address[] calldata _matcher) external onlyOwner {
+        setMatcher(_assetId, _matcher);
+    }
+
+    function removeMatcherExternal(uint _assetId, address _removal) external onlyOwner returns (bool) {
+        return removeMatcher(_assetId, _removal);
+    }
+
     /// @notice removes an matcher-address from the matcher-array of an asset 
     /// @param _assetId the id of an asset
     /// @param _removal the address to be removed

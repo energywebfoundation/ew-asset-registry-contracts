@@ -139,5 +139,10 @@ contract AssetConsumingRegistryLogic is AssetLogic, AssetConsumingInterface {
         return checkAssetGeneralExistingStatus(AssetConsumingDB(address(db)).getAssetBySmartMeter(_smartMeter).assetGeneral);
     }
 
+    function checkAssetExistExternal(address _smartMeter) external view returns (bool) {
+        return checkAssetExist(_smartMeter);
+    }
+
+
     
 }

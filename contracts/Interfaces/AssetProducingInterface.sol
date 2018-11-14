@@ -25,5 +25,5 @@ interface AssetProducingInterface {
     function createAsset(address _smartMeter, address _owner, bool _active, address[] calldata _matcher, string calldata _propertiesDocumentHash, string calldata _url, uint _numOwnerChanges) external returns (uint); 
     function getAssetById(uint _assetId) external view returns (AssetProducingDB.Asset memory);
     function getAssetBySmartMeter(address _smartMeter) external view returns (AssetProducingDB.Asset memory);
-    function checkAssetExist(address _smartMeter) public view returns (bool);
+//    function checkAssetExist(address _smartMeter) public view returns (bool);
 }
