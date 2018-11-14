@@ -14,7 +14,7 @@
 //
 // @authors: Martin Kuechler, martin.kuechler@slock.it
 
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
 
 import "ew-utils-general-contracts/contracts/Msc/Owned.sol";
@@ -81,7 +81,7 @@ contract AssetGeneralDB is Owned, AssetGeneralStructContract, AssetDbInterface {
     /// @notice set the Last SmartMeterRead File-Hash 
     /// @param _assetId the id of an asset
     /// @param _lastSmartMeterReadFileHash the hash of the last meterreading 
-    function setLastSmartMeterReadFileHash(uint _assetId, string _lastSmartMeterReadFileHash) external onlyOwner {
+    function setLastSmartMeterReadFileHash(uint _assetId, string calldata _lastSmartMeterReadFileHash) external onlyOwner {
         getAssetGeneralInternal(_assetId).lastSmartMeterReadFileHash = _lastSmartMeterReadFileHash;
     }
 
@@ -107,7 +107,7 @@ contract AssetGeneralDB is Owned, AssetGeneralStructContract, AssetDbInterface {
     function setSmartMeterRead(
         uint _assetId, 
         uint _lastSmartMeterReadWh, 
-        string _lastSmartMeterReadFileHash
+        string calldata _lastSmartMeterReadFileHash
     )
         external
         onlyOwner
@@ -127,7 +127,7 @@ contract AssetGeneralDB is Owned, AssetGeneralStructContract, AssetDbInterface {
     /// @notice gets the AssetGeneral-struct as memory 
     /// @param _assetId the id of an asset
     /// @return the AssetGeneral-struct as memory
-    function getAssetGeneral(uint _assetId) external onlyOwner view returns (AssetGeneral general){
+    function getAssetGeneral(uint _assetId) external onlyOwner view returns (AssetGeneral memory general){
         return getAssetGeneralInternal(_assetId);
     }
 
@@ -141,7 +141,7 @@ contract AssetGeneralDB is Owned, AssetGeneralStructContract, AssetDbInterface {
     /// @notice gets the last filehash of a meterreading
     /// @param _assetId the id of an asset
     /// @return filehash of the last meterreading
-    function getLastSmartMeterReadFileHash(uint _assetId) external onlyOwner view returns (string) {
+    function getLastSmartMeterReadFileHash(uint _assetId) external onlyOwner view returns (string memory) {
         return getAssetGeneralInternal(_assetId).lastSmartMeterReadFileHash;
     }
 
@@ -163,7 +163,7 @@ contract AssetGeneralDB is Owned, AssetGeneralStructContract, AssetDbInterface {
     /// @dev this function can be used to save gas-costs when calling it
     /// @param _assetId the id of an asset
     /// @return last meterreading and its filehash
-    function getLastMeterReadingAndHash(uint _assetId) external onlyOwner view returns (uint _lastSmartMeterReadWh, string _lastSmartMeterReadFileHash) {
+    function getLastMeterReadingAndHash(uint _assetId) external onlyOwner view returns (uint _lastSmartMeterReadWh, string memory _lastSmartMeterReadFileHash) {
         AssetGeneral memory general = getAssetGeneralInternal(_assetId);
         _lastSmartMeterReadWh = general.lastSmartMeterReadWh;
         _lastSmartMeterReadFileHash = general.lastSmartMeterReadFileHash;
@@ -179,7 +179,7 @@ contract AssetGeneralDB is Owned, AssetGeneralStructContract, AssetDbInterface {
     /// @notice gets the matcher-array 
     /// @param _assetId the id of an asset
     /// @return array with matcher-addresses
-    function getMatcher(uint _assetId) external onlyOwner view returns (address[]) {
+    function getMatcher(uint _assetId) external onlyOwner view returns (address[] memory) {
         return getAssetGeneralInternal(_assetId).matcher;
     }
 
@@ -197,7 +197,7 @@ contract AssetGeneralDB is Owned, AssetGeneralStructContract, AssetDbInterface {
     /// @notice Set the matcher-array
     /// @param _assetId the id of an asset
     /// @param _matcher array with matcher-addresses
-    function setMatcher(uint _assetId, address[] _matcher) public onlyOwner {
+    function setMatcher(uint _assetId, address[] memory _matcher) public onlyOwner {
         getAssetGeneralInternal(_assetId).matcher = _matcher;
     } 
 

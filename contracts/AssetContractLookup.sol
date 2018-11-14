@@ -14,7 +14,7 @@
 //
 // @authors: slock.it GmbH, Martin Kuechler, martin.kuchler@slock.it
 
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.0;
 
 import "ew-utils-general-contracts/contracts/Msc/Owned.sol";
 import "ew-utils-general-contracts/contracts/Interfaces/Updatable.sol";
@@ -49,12 +49,12 @@ contract AssetContractLookup is Owned, AssetContractLookupInterface {
         onlyOwner
     {
         require(    
-            _userRegistry != address(0) && _assetProducingRegistry != address(0) && _assetConsumingRegistry != address(0)
-            && userRegistry == address(0) && assetProducingRegistry == address(0) && assetConsumingRegistry == address(0),
+            address(_userRegistry) != address(0) && address(_assetProducingRegistry) != address(0) && address(_assetConsumingRegistry) != address(0)
+            && address(userRegistry) == address(0) && address(assetProducingRegistry) == address(0) && address(assetConsumingRegistry) == address(0),
             "alreadny initialized"
         );
-        require(_assetProducingDB != 0, "assetProducingDB cannot be 0");
-        require(_assetConsumingDB != 0, "assetConsumingDB cannot be 0");
+        require(_assetProducingDB != address(0), "assetProducingDB cannot be 0");
+        require(_assetConsumingDB != address(0), "assetConsumingDB cannot be 0");
 
         userRegistry = _userRegistry;
         assetProducingRegistry = _assetProducingRegistry;
@@ -73,23 +73,23 @@ contract AssetContractLookup is Owned, AssetContractLookupInterface {
         external
         onlyOwner 
     {
-        if (_assetProducingRegistry != address(0)) {
-            assetProducingRegistry.update(_assetProducingRegistry);
+        if (address(_assetProducingRegistry) != address(0)) {
+            assetProducingRegistry.update(address(_assetProducingRegistry));
             assetProducingRegistry = _assetProducingRegistry;
         }
 
-        if(_assetConsumingRegistry != address(0)) {
-            assetConsumingRegistry.update(_assetConsumingRegistry);
+        if(address(_assetConsumingRegistry) != address(0)) {
+            assetConsumingRegistry.update(address(_assetConsumingRegistry));
             assetConsumingRegistry = _assetConsumingRegistry;
         }        
     }
 
     function assetConsumingRegistry() external view returns (address){
-        return assetConsumingRegistry;
+        return address(assetConsumingRegistry);
     }
 
     function assetProducingRegistry() external view returns (address){
-        return assetProducingRegistry;
+        return address(assetProducingRegistry);
     }
         
     function maxMatcherPerAsset() external view returns (uint){
@@ -97,7 +97,7 @@ contract AssetContractLookup is Owned, AssetContractLookupInterface {
     }
 
     function userRegistry() external view returns (address){
-        return userRegistry;
+        return address(userRegistry);
     }
 
 }

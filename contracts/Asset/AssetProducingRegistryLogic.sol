@@ -14,7 +14,7 @@
 //
 // @authors: slock.it GmbH, Jonas Bentke, jonas.bentke@slock.it
 
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
 
 import "../../contracts/Asset/AssetProducingDB.sol";
@@ -44,7 +44,7 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
     /// @notice Constructor
     /// @param _userContractLookup usercontract-lookup-contract
     /// @param _assetContractLookup the asset-lookup-contract
-    constructor(UserContractLookupInterface _userContractLookup, AssetContractLookupInterface _assetContractLookup) RoleManagement(_userContractLookup,_assetContractLookup) public {
+    constructor(UserContractLookupInterface _userContractLookup, AssetContractLookupInterface _assetContractLookup) RoleManagement(_userContractLookup, address(_assetContractLookup)) public {
         userContractLookup = _userContractLookup;
     }
 
@@ -55,17 +55,17 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
     function saveSmartMeterRead(
         uint _assetId, 
         uint _newMeterRead, 
-        string _lastSmartMeterReadFileHash
+        string calldata _lastSmartMeterReadFileHash
     ) 
         external
         isInitialized
     {
         uint createdPower = setSmartMeterReadInternal(_assetId, _newMeterRead, _lastSmartMeterReadFileHash);
 
-        AssetProducingDB.Asset memory asset = AssetProducingDB(db).getAssetById(_assetId);
+        AssetProducingDB.Asset memory asset = AssetProducingDB(address(db)).getAssetById(_assetId);
 
         uint oldMeterRead = asset.assetGeneral.lastSmartMeterReadWh; 
-        if(asset.assetGeneral.marketLookupContract != 0x0){
+        if(address(asset.assetGeneral.marketLookupContract) != address(0x0)){
             if (asset.assetGeneral.bundled) {
                 EnergyCertificateBundleInterface(OriginContractLookupInterface(asset.assetGeneral.marketLookupContract).originLogicRegistry()).createBundle(
                     _assetId, 
@@ -94,9 +94,9 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
         address _smartMeter,
         address _owner,
         bool _active,
-        address[] _matcher,
-        string _propertiesDocumentHash,
-        string _url,
+        address[] calldata _matcher,
+        string calldata _propertiesDocumentHash,
+        string calldata _url,
         uint _numOwnerChanges
     ) 
         external 
@@ -113,7 +113,7 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
             matcher: _matcher,
             propertiesDocumentHash: _propertiesDocumentHash,
             url: _url,
-            marketLookupContract: 0x0,
+            marketLookupContract: address(0x0),
             bundled: false
         });
 
@@ -123,7 +123,7 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
             }
         );
 
-        _assetId =  AssetProducingDB(db).addFullAsset(_asset);
+        _assetId =  AssetProducingDB(address(db)).addFullAsset(_asset);
 
         emit LogAssetCreated(msg.sender, _assetId);
         
@@ -136,10 +136,10 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
         external
         view
         returns (
-            AssetProducingDB.Asset
+            AssetProducingDB.Asset memory
         )
     {        
-        return AssetProducingDB(db).getAssetById(_assetId);
+        return AssetProducingDB(address(db)).getAssetById(_assetId);
     }
 
 	/// @notice gets an asset by its smartmeter
@@ -149,17 +149,17 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
         external 
         view 
         returns (  
-            AssetProducingDB.Asset
+            AssetProducingDB.Asset memory
         )
     {
-        return AssetProducingDB(db).getAssetBySmartMeter(_smartMeter);
+        return AssetProducingDB(address(db)).getAssetBySmartMeter(_smartMeter);
     }
 
 	/// @notice checks whether an assets with the provided smartmeter already exists
 	/// @param _smartMeter smartmter of an asset
 	/// @return whether there is already an asset with that smartmeter
     function checkAssetExist(address _smartMeter) public view returns (bool){
-        return checkAssetGeneralExistingStatus(AssetProducingDB(db).getAssetBySmartMeter(_smartMeter).assetGeneral);
+        return checkAssetGeneralExistingStatus(AssetProducingDB(address(db)).getAssetBySmartMeter(_smartMeter).assetGeneral);
     }
 
 	/// @notice enabes or disables the bundle-functionality

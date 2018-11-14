@@ -14,7 +14,7 @@
 //
 // @authors: slock.it GmbH, Martin Kuechler, martin.kuechler@slock.it
 
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
 
 import "../../contracts/Asset/AssetConsumingDB.sol";
@@ -39,7 +39,7 @@ contract AssetConsumingRegistryLogic is AssetLogic, AssetConsumingInterface {
         UserContractLookupInterface _userContractLookup, 
         AssetContractLookupInterface _assetContractLookup
     ) 
-        RoleManagement(_userContractLookup,_assetContractLookup) 
+        RoleManagement(_userContractLookup,address (_assetContractLookup)) 
         public 
     {
         userContractLookup = _userContractLookup;
@@ -52,7 +52,7 @@ contract AssetConsumingRegistryLogic is AssetLogic, AssetConsumingInterface {
     /// @param _assetId The id belonging to an entry in the asset registry
     /// @param _newMeterRead The current meter read of the asset
     /// @param _lastSmartMeterReadFileHash Last meter read file hash
-    function saveSmartMeterRead(uint _assetId, uint _newMeterRead, string _lastSmartMeterReadFileHash) 
+    function saveSmartMeterRead(uint _assetId, uint _newMeterRead, string calldata _lastSmartMeterReadFileHash) 
         external
     {
         setSmartMeterReadInternal(_assetId, _newMeterRead, _lastSmartMeterReadFileHash);
@@ -65,10 +65,10 @@ contract AssetConsumingRegistryLogic is AssetLogic, AssetConsumingInterface {
         external
         view
         returns (
-            AssetConsumingDB.Asset
+            AssetConsumingDB.Asset memory
         )
     {        
-        return AssetConsumingDB(db).getAssetById(_assetId);
+        return AssetConsumingDB(address(db)).getAssetById(_assetId);
     }
 
     /// @notice function to create a new asset
@@ -85,9 +85,9 @@ contract AssetConsumingRegistryLogic is AssetLogic, AssetConsumingInterface {
         address _smartMeter,
         address _owner,
         bool _active,
-        address[] _matcher,
-        string _propertiesDocumentHash,
-        string _url
+        address[] calldata _matcher,
+        string calldata _propertiesDocumentHash,
+        string calldata _url
     ) 
         external 
         returns (uint _assetId)
@@ -104,7 +104,7 @@ contract AssetConsumingRegistryLogic is AssetLogic, AssetConsumingInterface {
             matcher: _matcher,
             propertiesDocumentHash: _propertiesDocumentHash,
             url: _url,
-            marketLookupContract: 0x0,
+            marketLookupContract: address(0x0),
             bundled: false
         });
 
@@ -112,7 +112,7 @@ contract AssetConsumingRegistryLogic is AssetLogic, AssetConsumingInterface {
             {assetGeneral: a}
         );
 
-        _assetId = AssetConsumingDB(db).addFullAsset(_asset);
+        _assetId = AssetConsumingDB(address(db)).addFullAsset(_asset);
         emit LogAssetCreated(msg.sender,_assetId);
     }
 
@@ -123,10 +123,10 @@ contract AssetConsumingRegistryLogic is AssetLogic, AssetConsumingInterface {
         external 
         view 
         returns (  
-            AssetConsumingDB.Asset
+            AssetConsumingDB.Asset memory
         )
     {
-        return AssetConsumingDB(db).getAssetBySmartMeter(_smartMeter);
+        return AssetConsumingDB(address(db)).getAssetBySmartMeter(_smartMeter);
     }
 
     /**
@@ -136,7 +136,7 @@ contract AssetConsumingRegistryLogic is AssetLogic, AssetConsumingInterface {
     /// @param _smartMeter the smartmeter of the asset ot be deployed 
     /// @return true if smartMeter is already in use, false otherwhise
     function checkAssetExist(address _smartMeter) public view returns (bool){
-        return checkAssetGeneralExistingStatus(AssetConsumingDB(db).getAssetBySmartMeter(_smartMeter).assetGeneral);
+        return checkAssetGeneralExistingStatus(AssetConsumingDB(address(db)).getAssetBySmartMeter(_smartMeter).assetGeneral);
     }
 
     
