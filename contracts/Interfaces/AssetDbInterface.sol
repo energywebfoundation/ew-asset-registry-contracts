@@ -14,7 +14,7 @@
 //
 // @authors: slock.it GmbH, Martin Kuechler, martin.kuchler@slock.it
 
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
 
 import "../../contracts/Asset/AssetGeneralStructContract.sol";
@@ -25,7 +25,7 @@ interface AssetDbInterface {
 	/// @notice gets the AssetGeneral struct of an asset
 	/// @param _assetId the id of asset
 	/// @return AssetGeneral struct
-    function getAssetGeneral(uint _assetId) external  view returns (AssetGeneralStructContract.AssetGeneral general);
+    function getAssetGeneral(uint _assetId) external view returns (AssetGeneralStructContract.AssetGeneral memory general);
 	
 	/// @notice sets the active flag of an asset
 	/// @param _assetId the id of an asset
@@ -40,12 +40,12 @@ interface AssetDbInterface {
 	/// @notice sets a new filehash of a meterreading
 	/// @param _assetId the id of an asset
 	/// @param _lastSmartMeterReadFileHash new filehash
-    function setLastSmartMeterReadFileHash(uint _assetId, string _lastSmartMeterReadFileHash) external;
+    function setLastSmartMeterReadFileHash(uint _assetId, string calldata _lastSmartMeterReadFileHash) external;
 	
 	/// @notice gets the latest filehash
 	/// @param _assetId the id of an sset
 	/// @return filehash
-    function getLastSmartMeterReadFileHash(uint _assetId) external view returns (string);
+    function getLastSmartMeterReadFileHash(uint _assetId) external view returns (string memory);
 
 	/// @notice seta a new meterreading
 	/// @param _assetId the id of an asset
@@ -100,29 +100,29 @@ interface AssetDbInterface {
 	/// @notice gets the matcher array of an asset
 	/// @param _assetId the id of an asset
 	/// @return matcher-array
-    function getMatcher(uint _assetId) external view returns (address[]);
+    function getMatcher(uint _assetId) external view returns (address[] memory);
 
 	/// @notice sets the matcher array
 	/// @param _assetId id of an asset
 	/// @param _matcher matcher-array
-    function setMatcher(uint _assetId, address[] _matcher) public;
+    function setMatcherExternal(uint _assetId, address[] calldata _matcher) external;
 	
 	/// @notice removes a matcher-address from the matcher-array of an asset
 	/// @param _assetId the id of an asset
 	/// @param _removal address to be removed
 	/// @return whether the to be removed address was found in the array
-    function removeMatcher(uint _assetId, address _removal) public returns (bool);
+    function removeMatcherExternal(uint _assetId, address _removal) external returns (bool);
 
 	/// @notice sets a new meterreading and its filehash
 	/// @param _assetId the id of an asset
 	/// @param lastSmartMeterReadWh meterreading in Wh
 	/// @param _lastSmartMeterReadFileHash filehash of the meterreading
-	function setSmartMeterRead(uint _assetId, uint lastSmartMeterReadWh, string _lastSmartMeterReadFileHash) external;
+	function setSmartMeterRead(uint _assetId, uint lastSmartMeterReadWh, string calldata _lastSmartMeterReadFileHash) external;
 	
 	/// @notice gets the latest meterreading and its hash
 	/// @param _assetId id of an asset
 	/// @return meterreading and its hash
-    function getLastMeterReadingAndHash(uint _assetId) external view returns (uint _lastSmartMeterReadWh, string _lastSmartMeterReadFileHash);
+    function getLastMeterReadingAndHash(uint _assetId) external view returns (uint _lastSmartMeterReadWh, string memory _lastSmartMeterReadFileHash);
 
 	/// @notice get the amount of onboarded assets
 	/// @return the amount of onboarded assets

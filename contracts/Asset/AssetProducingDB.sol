@@ -15,7 +15,7 @@
 //
 // @authors: slock.it GmbH, Martin Kuechler, martin.kuechler@slock.it
 
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
 
 import "../../contracts/Asset/AssetGeneralDB.sol";
@@ -50,7 +50,7 @@ contract AssetProducingDB is AssetGeneralDB {
 	/// @notice adds a complete sset to the mapping and array
 	/// @param _a the complete asset
 	/// @return the generated assetId
-    function addFullAsset(Asset _a) 
+    function addFullAsset(Asset memory _a) 
         public
         onlyOwner
         returns (uint _assetId)
@@ -70,14 +70,14 @@ contract AssetProducingDB is AssetGeneralDB {
 	/// @notice gets an asset by its id
 	/// @param _assetId the id of an asset
 	/// @return Asset-struct
-    function getAssetById(uint _assetId) external view returns (Asset) {
+    function getAssetById(uint _assetId) external view returns (Asset memory) {
         return assetMapping[smartMeterAddresses[_assetId]];
     }
 
 	/// @notice gets an asset by its smartmeter
 	/// @param _smartMeter the smartmeter of an asset
 	/// @return Asset-Struct
-    function getAssetBySmartMeter(address _smartMeter) external onlyOwner view returns (Asset) {
+    function getAssetBySmartMeter(address _smartMeter) external onlyOwner view returns (Asset memory) {
         return assetMapping[_smartMeter];
     }
     

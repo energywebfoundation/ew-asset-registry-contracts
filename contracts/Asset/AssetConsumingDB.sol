@@ -15,7 +15,7 @@
 //
 // @authors: slock.it GmbH, Martin Kuechler, martin.kuechler@slock.it
 
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
 
 import "../../contracts/Asset/AssetGeneralDB.sol";
@@ -44,14 +44,14 @@ contract AssetConsumingDB is AssetGeneralDB {
     /// @notice function to get an asset by its id
     /// @param _assetId the id of the asset
     /// @return the Asset-struct
-    function getAssetById(uint _assetId) external onlyOwner view returns (Asset) {
+    function getAssetById(uint _assetId) external onlyOwner view returns (Asset memory) {
         return assetMapping[smartMeterAddresses[_assetId]];
     }
         
     /// @notice function to get an asset by its smartmeter
     /// @param _smartMeter the smartmeter of the asset 
     /// @return the Asset-struct
-    function getAssetBySmartMeter(address _smartMeter) external onlyOwner view returns (Asset) {
+    function getAssetBySmartMeter(address _smartMeter) external onlyOwner view returns (Asset memory) {
         return assetMapping[_smartMeter];
     }
 
@@ -68,7 +68,7 @@ contract AssetConsumingDB is AssetGeneralDB {
     /// @notice function to add a new asset to the list of assets
     /// @dev it's using a public-modifier in order to avoid an UnimplementedFeatureError
     /// @return the assetId beloning the asset 
-    function addFullAsset(Asset _a) 
+    function addFullAsset(Asset memory _a) 
         public
         onlyOwner
         returns (uint _assetId)

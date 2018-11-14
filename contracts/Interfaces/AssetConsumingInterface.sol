@@ -14,7 +14,7 @@
 //
 // @authors: slock.it GmbH, Martin Kuechler, martin.kuchler@slock.it
 
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
 
 import "../../contracts/Asset/AssetConsumingDB.sol";
@@ -26,17 +26,17 @@ interface AssetConsumingInterface {
 	/// @param _assetId id of an asset
 	/// @param _newMeterRead new meterreading in wh
 	/// @param _lastSmartMeterReadFileHash filehash
-    function saveSmartMeterRead(uint _assetId, uint _newMeterRead, string _lastSmartMeterReadFileHash) external;
+    function saveSmartMeterRead(uint _assetId, uint _newMeterRead, string calldata _lastSmartMeterReadFileHash) external;
 
 	/// @notice gets an asset by its id
 	/// @param _assetId id of an asset
 	/// @return Asset-Consuming-Struct
-    function getAssetById(uint _assetId) external view returns ( AssetConsumingDB.Asset);
+    function getAssetById(uint _assetId) external view returns (AssetConsumingDB.Asset memory);
 	
 	/// @notice gets an asset by its smartmeter
 	/// @param _smartMeter smartmeter of an asset
 	/// @return Asset-Consuming-Struct
-    function getAssetBySmartMeter(address _smartMeter) external view returns (AssetConsumingDB.Asset);
+    function getAssetBySmartMeter(address _smartMeter) external view returns (AssetConsumingDB.Asset memory);
 	
     /// @notice creates an asset
 	/// @param _smartMeter smartmeter address
@@ -46,10 +46,10 @@ interface AssetConsumingInterface {
 	/// @param _propertiesDocumentHash hash of the document with the asset-properties
 	/// @param _url where to find the document 
 	/// @return generated asset-id
-    function createAsset(address _smartMeter, address _owner, bool _active, address[] _matcher, string _propertiesDocumentHash, string _url) external returns (uint); 
+    function createAsset(address _smartMeter, address _owner, bool _active, address[] calldata _matcher, string calldata _propertiesDocumentHash, string calldata _url) external returns (uint); 
 	
     /// @notice checks whether an asset already exists
 	/// @param _smartMeter smartmeter of an asset
 	/// @return whether an asset already exists
-    function checkAssetExist(address _smartMeter) public view returns (bool);
+    function checkAssetExistExternal(address _smartMeter) external view returns (bool);
 }
