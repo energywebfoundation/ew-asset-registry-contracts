@@ -12,13 +12,13 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details, at <http://www.gnu.org/licenses/>.
 //
-// @authors: slock.it GmbH, Martin Kuechler, martin.kuchler@slock.it
+// @authors: slock.it GmbH, Martin Kuechler, martin.kuechler@slock.it
 
 pragma solidity ^0.5.0;
 
 /// @title this interface should be used by the MarketContractLookup-Contract (see origin-contracts)
-interface OriginBundleCreationInterface {
+interface TradableEntityCreationInterface {
   
-    function createBundle(uint _assetId, uint _powerInW) external returns (uint);
+    function createTradableEntity(uint _assetId, uint _powerInW) external returns (uint);
 
 }

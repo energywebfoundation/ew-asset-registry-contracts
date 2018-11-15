@@ -19,8 +19,7 @@ pragma experimental ABIEncoderV2;
 
 import "../../contracts/Asset/AssetProducingDB.sol";
 import "../../contracts/AssetContractLookup.sol";
-import "../contracts/Interfaces/OriginBundleCreationInterface.sol";
-import "../contracts/Interfaces/OriginCertificateCreationInterface.sol";
+import "../contracts/Interfaces/TradableEntityCreationInterface.sol";
 import "../contracts/Interfaces/OriginMarketContractLookupInterface.sol";
 
 import "../../contracts/Asset/AssetLogic.sol";
@@ -66,18 +65,11 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
 
         uint oldMeterRead = asset.assetGeneral.lastSmartMeterReadWh; 
         if(address(asset.assetGeneral.marketLookupContract) != address(0x0)){
-            if (asset.assetGeneral.bundled) {
-                OriginBundleCreationInterface(OriginMarketContractLookupInterface(asset.assetGeneral.marketLookupContract).originLogicRegistry()).createBundle(
+                TradableEntityCreationInterface(OriginMarketContractLookupInterface(asset.assetGeneral.marketLookupContract).originLogicRegistry()).createTradableEntity(
                     _assetId, 
                     createdPower
                 ); 
-                
-            } else {
-                OriginCertificateCreationInterface(OriginMarketContractLookupInterface(asset.assetGeneral.marketLookupContract).originLogicRegistry()).createCertificateExternal(
-                    _assetId, 
-                    createdPower
-                ); 
-            }
+            
         }
     }
     
