@@ -20,7 +20,7 @@
   "license": "ISC",
   "dependencies": {
     "ew-user-registry-contracts": "v0.0.6",
-    "sloffle": "v1.3.2",
+    "sloffle": "v1.3.3",
     "web3": "^1.0.0-beta.36",
     "winston": "^3.0.0"
   },

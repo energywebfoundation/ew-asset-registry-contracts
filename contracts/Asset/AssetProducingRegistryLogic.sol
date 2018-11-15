@@ -12,16 +12,16 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details, at <http://www.gnu.org/licenses/>.
 //
-// @authors: slock.it GmbH, Jonas Bentke, jonas.bentke@slock.it
+// @authors: slock.it GmbH, Martin Kuechler, martin.kuechler@slock.it
 
 pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
 
 import "../../contracts/Asset/AssetProducingDB.sol";
 import "../../contracts/AssetContractLookup.sol";
-import "ew-origin-contracts/contracts/Interfaces/CertificateInterface.sol";
-import "ew-origin-contracts/contracts/Interfaces/EnergyCertificateBundleInterface.sol";
-import "ew-origin-contracts/contracts/Interfaces/OriginContractLookupInterface.sol";
+import "../contracts/Interfaces/OriginBundleCreationInterface.sol";
+import "../contracts/Interfaces/OriginCertificateCreationInterface.sol";
+import "../contracts/Interfaces/OriginMarketContractLookupInterface.sol";
 
 import "../../contracts/Asset/AssetLogic.sol";
 import "ew-utils-general-contracts/contracts/Msc/Owned.sol";
@@ -67,13 +67,13 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
         uint oldMeterRead = asset.assetGeneral.lastSmartMeterReadWh; 
         if(address(asset.assetGeneral.marketLookupContract) != address(0x0)){
             if (asset.assetGeneral.bundled) {
-                EnergyCertificateBundleInterface(OriginContractLookupInterface(asset.assetGeneral.marketLookupContract).originLogicRegistry()).createBundle(
+                OriginBundleCreationInterface(OriginMarketContractLookupInterface(asset.assetGeneral.marketLookupContract).originLogicRegistry()).createBundle(
                     _assetId, 
                     createdPower
                 ); 
                 
             } else {
-                CertificateInterface(OriginContractLookupInterface(asset.assetGeneral.marketLookupContract).originLogicRegistry()).createCertificateExternal(
+                OriginCertificateCreationInterface(OriginMarketContractLookupInterface(asset.assetGeneral.marketLookupContract).originLogicRegistry()).createCertificateExternal(
                     _assetId, 
                     createdPower
                 ); 
