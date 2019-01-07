@@ -59,8 +59,6 @@ describe('AssetConsumingLogic', () => {
     const assetSmartmeter2PK = '0x554f3c1470e9f66ed2cf1dc260d2f4de77a816af2883679b1dc68c551e8fa5ed';
     const assetSmartMeter2 = web3.eth.accounts.privateKeyToAccount(assetSmartmeter2PK).address;
 
-    let isGanache: boolean;
-
     it('should deploy the contracts', async () => {
 
         const userContracts = await migrateUserRegistryContracts(web3);

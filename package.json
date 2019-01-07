@@ -21,7 +21,7 @@
   "dependencies": {
     "ew-user-registry-contracts": "v0.0.6",
     "ew-deployment": "0.0.2-beta02",
-    "web3": "^1.0.0-beta.36",
+    "web3": "^1.0.0-beta.37",
     "winston": "^3.0.0"
   },
   "devDependencies": {

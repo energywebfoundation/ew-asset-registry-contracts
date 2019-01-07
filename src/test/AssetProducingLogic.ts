@@ -22,12 +22,9 @@ import { UserContractLookup, UserLogic, migrateUserRegistryContracts } from 'ew-
 import { migrateAssetRegistryContracts } from '../utils/migrateContracts';
 import { AssetContractLookup } from '../wrappedContracts/AssetContractLookup';
 import { AssetConsumingRegistryLogic } from '../wrappedContracts/AssetConsumingRegistryLogic';
-import { getClientVersion } from 'sloffle';
 import { AssetProducingRegistryLogic } from '../wrappedContracts/AssetProducingRegistryLogic';
 import { AssetConsumingDB } from '../wrappedContracts/AssetConsumingDB';
 import { AssetProducingDB } from '../wrappedContracts/AssetProducingDB';
-import { fail } from 'assert';
-import { JsonRPCResponse } from '../types/types';
 
 describe('AssetProducingLogic', () => {
 
@@ -60,8 +57,6 @@ describe('AssetProducingLogic', () => {
 
     const assetSmartmeter2PK = '0x554f3c1470e9f66ed2cf1dc260d2f4de77a816af2883679b1dc68c551e8fa5ed';
     const assetSmartMeter2 = web3.eth.accounts.privateKeyToAccount(assetSmartmeter2PK).address;
-
-    let isGanache;
 
     it('should deploy the contracts', async () => {
 
@@ -453,19 +448,17 @@ describe('AssetProducingLogic', () => {
     it('should be able to deactive an asset', async () => {
 
         const tx = await assetProducingLogic.setActive(0, false, { privateKey: privateKeyDeployment });
-        if (isGanache) {
 
-            const eventActive = (await assetProducingLogic.getAllLogAssetSetActiveEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }));
+        const eventActive = (await assetProducingLogic.getAllLogAssetSetActiveEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }));
 
-            assert.equal(eventActive.length, 0);
+        assert.equal(eventActive.length, 0);
 
-            const eventInactive = (await assetProducingLogic.getAllLogAssetSetInactiveEvents({ fromBlock: tx.blockNumber - 1, toBlock: tx.blockNumber + 1 }))[0];
+        const eventInactive = (await assetProducingLogic.getAllLogAssetSetInactiveEvents({ fromBlock: tx.blockNumber - 1, toBlock: tx.blockNumber + 1 }))[0];
 
-            assert.equal(eventInactive.event, 'LogAssetSetInactive');
-            assert.deepEqual(eventInactive.returnValues, {
-                0: '0', _assetId: '0',
-            });
-        }
+        assert.equal(eventInactive.event, 'LogAssetSetInactive');
+        assert.deepEqual(eventInactive.returnValues, {
+            0: '0', _assetId: '0',
+        });
 
     });
 
@@ -508,17 +501,14 @@ describe('AssetProducingLogic', () => {
 
         const tx = await assetProducingLogic.setActive(0, true, { privateKey: privateKeyDeployment });
 
-        if (isGanache) {
+        const eventActive = (await assetProducingLogic.getAllLogAssetSetInactiveEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }));
+        assert.equal(eventActive.length, 0);
+        const eventInactive = (await assetProducingLogic.getAllLogAssetSetActiveEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
 
-            const eventActive = (await assetProducingLogic.getAllLogAssetSetInactiveEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }));
-            assert.equal(eventActive.length, 0);
-            const eventInactive = (await assetProducingLogic.getAllLogAssetSetActiveEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
-
-            assert.equal(eventInactive.event, 'LogAssetSetActive');
-            assert.deepEqual(eventInactive.returnValues, {
-                0: '0', _assetId: '0',
-            });
-        }
+        assert.equal(eventInactive.event, 'LogAssetSetActive');
+        assert.deepEqual(eventInactive.returnValues, {
+            0: '0', _assetId: '0',
+        });
     });
 
     it('should fail when trying to call update', async () => {
