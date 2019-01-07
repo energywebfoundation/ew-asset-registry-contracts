@@ -72,7 +72,7 @@ describe('AssetConsumingLogic', () => {
 
         const userContractLookupAddr = userContracts[process.cwd() + '/node_modules/ew-user-registry-contracts/dist/contracts/UserContractLookup.json'];
 
-        const deployedContracts = await migrateAssetRegistryContracts(web3, userContractLookupAddr);
+        const deployedContracts = await migrateAssetRegistryContracts(web3, userContractLookupAddr, privateKeyDeployment);
 
         userContractLookup = new UserContractLookup((web3 as any),
                                                     userContractLookupAddr);

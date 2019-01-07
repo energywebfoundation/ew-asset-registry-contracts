@@ -50,7 +50,7 @@ describe('AssetContractLookup', () => {
         const userContracts = await migrateUserRegistryContracts(web3);
 
         const userLogic = new UserLogic((web3 as any),
-            userContracts[process.cwd() + '/node_modules/ew-user-registry-contracts/dist/contracts/UserLogic.json']);
+                                        userContracts[process.cwd() + '/node_modules/ew-user-registry-contracts/dist/contracts/UserLogic.json']);
 
         await userLogic.setUser(accountDeployment, 'admin', { privateKey: privateKeyDeployment });
 
@@ -58,10 +58,10 @@ describe('AssetContractLookup', () => {
 
         const userContractLookupAddr = userContracts[process.cwd() + '/node_modules/ew-user-registry-contracts/dist/contracts/UserContractLookup.json'];
 
-        const deployedContracts = await migrateAssetRegistryContracts(web3, userContractLookupAddr);
+        const deployedContracts = await migrateAssetRegistryContracts(web3, userContractLookupAddr, privateKeyDeployment);
 
         userContractLookup = new UserContractLookup((web3 as any),
-            userContractLookupAddr);
+                                                    userContractLookupAddr);
 
         Object.keys(deployedContracts).forEach(async (key) => {
 
@@ -117,11 +117,11 @@ describe('AssetContractLookup', () => {
 
         try {
             await assetContractLookup.init('0x1000000000000000000000000000000000000005',
-                '0x1000000000000000000000000000000000000005',
-                '0x1000000000000000000000000000000000000005',
-                '0x1000000000000000000000000000000000000005',
-                '0x1000000000000000000000000000000000000005',
-                { privateKey: privateKeyDeployment },
+                                           '0x1000000000000000000000000000000000000005',
+                                           '0x1000000000000000000000000000000000000005',
+                                           '0x1000000000000000000000000000000000000005',
+                                           '0x1000000000000000000000000000000000000005',
+                                           { privateKey: privateKeyDeployment },
             );
         }
         catch (ex) {
@@ -138,8 +138,8 @@ describe('AssetContractLookup', () => {
 
         try {
             await assetContractLookup.update('0x1000000000000000000000000000000000000005',
-                '0x1000000000000000000000000000000000000005',
-                { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
+                                             '0x1000000000000000000000000000000000000005',
+                                             { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
         }
         catch (ex) {
             failed = true;
@@ -152,8 +152,8 @@ describe('AssetContractLookup', () => {
     it('should be able to update as owner', async () => {
 
         await assetContractLookup.update('0x1000000000000000000000000000000000000005',
-            '0x1000000000000000000000000000000000000006',
-            { privateKey: privateKeyDeployment });
+                                         '0x1000000000000000000000000000000000000006',
+                                         { privateKey: privateKeyDeployment });
 
         assert.equal(await assetContractLookup.assetProducingRegistry(), '0x1000000000000000000000000000000000000005');
         assert.equal(await assetProducingDB.owner(), '0x1000000000000000000000000000000000000005');
@@ -168,7 +168,7 @@ describe('AssetContractLookup', () => {
 
         try {
             await assetContractLookup.changeOwner('0x1000000000000000000000000000000000000005',
-                { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
+                                                  { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
         }
         catch (ex) {
             failed = true;
@@ -182,7 +182,7 @@ describe('AssetContractLookup', () => {
     it('should be able to change owner ', async () => {
 
         await assetContractLookup.changeOwner('0x1000000000000000000000000000000000000005',
-            { privateKey: privateKeyDeployment });
+                                              { privateKey: privateKeyDeployment });
 
         assert.equal(await assetContractLookup.owner(), '0x1000000000000000000000000000000000000005');
 

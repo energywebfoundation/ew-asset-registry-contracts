@@ -1,17 +1,14 @@
 import { Web3Type } from '../types/web3';
-import * as fs from 'fs';
 import { AssetContractLookup } from '../wrappedContracts/AssetContractLookup';
 import { deploy } from 'ew-deployment';
 import { AssetContractLookupJSON, AssetConsumingDBJSON, AssetConsumingRegistryLogicJSON, AssetProducingDBJSON, AssetProducingRegistryLogicJSON } from '..';
 import * as path from 'path';
 
-export async function migrateAssetRegistryContracts(web3: Web3Type, userContractLookup: string): Promise<JSON> {
+export async function migrateAssetRegistryContracts(web3: Web3Type, userContractLookup: string, deployKey: string): Promise<JSON> {
     return new Promise<any>(async (resolve, reject) => {
 
-        const configFile = JSON.parse(fs.readFileSync(process.cwd() + '/connection-config.json', 'utf8'));
-
-        const privateKeyDeployment = configFile.develop.deployKey.startsWith('0x') ?
-            configFile.develop.deployKey : '0x' + configFile.develop.deployKey;
+        const privateKeyDeployment = deployKey.startsWith('0x') ?
+            deployKey : '0x' + deployKey;
         const accountDeployment = web3.eth.accounts.privateKeyToAccount(privateKeyDeployment).address;
 
         const assetContractLookupAddress = (await deploy(
