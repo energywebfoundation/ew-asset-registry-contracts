@@ -20,7 +20,7 @@
   "license": "ISC",
   "dependencies": {
     "ew-user-registry-contracts": "v0.0.6",
-    "sloffle": "v1.3.3",
+    "ew-deployment": "0.0.2-beta02",
     "web3": "^1.0.0-beta.36",
     "winston": "^3.0.0"
   },
@@ -31,6 +31,7 @@
     "chai": "^4.1.2",
     "ganache-cli": "^6.1.8",
     "mocha": "^5.2.0",
+    "sloffle": "v1.3.3",
     "solc": "^0.4.23",
     "tslint": "^5.11.0",
     "typescript": "^2.9.2",

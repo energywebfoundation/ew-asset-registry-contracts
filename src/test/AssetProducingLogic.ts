@@ -64,12 +64,11 @@ describe('AssetProducingLogic', () => {
     let isGanache;
 
     it('should deploy the contracts', async () => {
-        isGanache = (await getClientVersion(web3)).includes('EthereumJS');
 
         const userContracts = await migrateUserRegistryContracts(web3);
 
-        const userLogic: UserLogic = new UserLogic((web3 as any),
-                                                   userContracts[process.cwd() + '/node_modules/ew-user-registry-contracts/dist/contracts/UserLogic.json']);
+        const userLogic = new UserLogic((web3 as any),
+                                        userContracts[process.cwd() + '/node_modules/ew-user-registry-contracts/dist/contracts/UserLogic.json']);
 
         await userLogic.setUser(accountDeployment, 'admin', { privateKey: privateKeyDeployment });
 
@@ -81,13 +80,28 @@ describe('AssetProducingLogic', () => {
 
         userContractLookup = new UserContractLookup((web3 as any),
                                                     userContractLookupAddr);
-        assetContractLookup = new AssetContractLookup((web3 as any));
-        assetProducingLogic = new AssetProducingRegistryLogic((web3 as any));
-        assetConsumingLogic = new AssetConsumingRegistryLogic((web3 as any));
-        assetProducingDB = new AssetProducingDB((web3 as any));
-        assetConsumingDB = new AssetConsumingDB((web3 as any));
 
         Object.keys(deployedContracts).forEach(async (key) => {
+
+            if (key.includes('AssetContractLookup')) {
+                assetContractLookup = new AssetContractLookup((web3 as any), deployedContracts[key]);
+            }
+
+            if (key.includes('AssetConsumingDB')) {
+                assetConsumingDB = new AssetConsumingDB((web3 as any), deployedContracts[key]);
+            }
+
+            if (key.includes('AssetConsumingRegistryLogic')) {
+                assetConsumingLogic = new AssetConsumingRegistryLogic((web3 as any), deployedContracts[key]);
+            }
+
+            if (key.includes('AssetProducingDB')) {
+                assetProducingDB = new AssetProducingDB((web3 as any), deployedContracts[key]);
+            }
+
+            if (key.includes('AssetProducingRegistryLogic')) {
+                assetProducingLogic = new AssetProducingRegistryLogic((web3 as any), deployedContracts[key]);
+            }
 
             const deployedBytecode = await web3.eth.getCode(deployedContracts[key]);
             assert.isTrue(deployedBytecode.length > 0);
