@@ -67,21 +67,21 @@ describe('AssetConsumingLogic', () => {
 
     it('should deploy the contracts', async () => {
 
-        const userContracts = await migrateUserRegistryContracts(web3);
+        const userContracts = await migrateUserRegistryContracts(web3, privateKeyDeployment);
 
         userLogic = new UserLogic((web3 as any),
-            userContracts[process.cwd() + '/node_modules/ew-user-registry-contracts/dist/contracts/UserLogic.json']);
+                                  (userContracts as any).UserLogic);
 
         await userLogic.setUser(accountDeployment, 'admin', { privateKey: privateKeyDeployment });
 
         await userLogic.setRoles(accountDeployment, 3, { privateKey: privateKeyDeployment });
 
-        const userContractLookupAddr = userContracts[process.cwd() + '/node_modules/ew-user-registry-contracts/dist/contracts/UserContractLookup.json'];
+        const userContractLookupAddr = (userContracts as any).UserContractLookup;
 
         const deployedContracts = await migrateAssetRegistryContracts(web3, userContractLookupAddr, privateKeyDeployment);
 
         userContractLookup = new UserContractLookup((web3 as any),
-            userContractLookupAddr);
+                                                    userContractLookupAddr);
 
         Object.keys(deployedContracts).forEach(async (key) => {
 
@@ -121,6 +121,7 @@ describe('AssetConsumingLogic', () => {
             assert.equal(deployedBytecode, tempBytecode);
 
         });
+
     });
 
     it('should have the right owner', async () => {
@@ -479,7 +480,7 @@ describe('AssetConsumingLogic', () => {
 
         try {
             await assetConsumingLogic.setMarketLookupContract(0, '0x1000000000000000000000000000000000000005',
-                { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
+                                                              { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
         } catch (ex) {
             assert.include(ex.message, 'sender is not the assetOwner');
 
@@ -495,7 +496,7 @@ describe('AssetConsumingLogic', () => {
 
         try {
             await assetConsumingLogic.setMarketLookupContract(0, '0x1000000000000000000000000000000000000005',
-                { privateKey: matcherPK });
+                                                              { privateKey: matcherPK });
         } catch (ex) {
             assert.include(ex.message, 'sender is not the assetOwner');
 
@@ -511,7 +512,7 @@ describe('AssetConsumingLogic', () => {
 
         try {
             await assetConsumingLogic.setMarketLookupContract(0, '0x1000000000000000000000000000000000000005',
-                { privateKey: privateKeyDeployment });
+                                                              { privateKey: privateKeyDeployment });
         } catch (ex) {
             assert.include(ex.message, 'sender is not the assetOwner');
 
@@ -524,7 +525,7 @@ describe('AssetConsumingLogic', () => {
     it('should set marketAddress', async () => {
 
         await assetConsumingLogic.setMarketLookupContract(0, '0x1000000000000000000000000000000000000005',
-            { privateKey: assetOwnerPK });
+                                                          { privateKey: assetOwnerPK });
 
         assert.equal(await assetConsumingLogic.getMarketLookupContract(0), '0x1000000000000000000000000000000000000005');
 

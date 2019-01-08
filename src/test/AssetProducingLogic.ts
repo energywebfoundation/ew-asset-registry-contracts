@@ -67,16 +67,16 @@ describe('AssetProducingLogic', () => {
 
     it('should deploy the contracts', async () => {
 
-        const userContracts = await migrateUserRegistryContracts(web3);
+        const userContracts = await migrateUserRegistryContracts(web3, privateKeyDeployment);
 
         userLogic = new UserLogic((web3 as any),
-                                  userContracts[process.cwd() + '/node_modules/ew-user-registry-contracts/dist/contracts/UserLogic.json']);
+                                  (userContracts as any).UserLogic);
 
         await userLogic.setUser(accountDeployment, 'admin', { privateKey: privateKeyDeployment });
 
         await userLogic.setRoles(accountDeployment, 3, { privateKey: privateKeyDeployment });
 
-        const userContractLookupAddr = userContracts[process.cwd() + '/node_modules/ew-user-registry-contracts/dist/contracts/UserContractLookup.json'];
+        const userContractLookupAddr = (userContracts as any).UserContractLookup;
 
         const deployedContracts = await migrateAssetRegistryContracts(web3, userContractLookupAddr, privateKeyDeployment);
 
