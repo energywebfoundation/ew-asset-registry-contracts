@@ -25,7 +25,13 @@ import { AssetProducingRegistryLogic } from '../wrappedContracts/AssetProducingR
 import { AssetConsumingRegistryLogic } from '../wrappedContracts/AssetConsumingRegistryLogic';
 import { AssetConsumingDB } from '../wrappedContracts/AssetConsumingDB';
 import { AssetProducingDB } from '../wrappedContracts/AssetProducingDB';
-// import { getClientVersion } from 'sloffle';
+import {
+    AssetContractLookupJSON,
+    AssetConsumingDBJSON,
+    AssetConsumingRegistryLogicJSON,
+    AssetProducingDBJSON,
+    AssetProducingRegistryLogicJSON,
+} from '..';
 
 describe('AssetConsumingLogic', () => {
 
@@ -63,8 +69,8 @@ describe('AssetConsumingLogic', () => {
 
         const userContracts = await migrateUserRegistryContracts(web3);
 
-        const userLogic = new UserLogic((web3 as any),
-                                        userContracts[process.cwd() + '/node_modules/ew-user-registry-contracts/dist/contracts/UserLogic.json']);
+        userLogic = new UserLogic((web3 as any),
+            userContracts[process.cwd() + '/node_modules/ew-user-registry-contracts/dist/contracts/UserLogic.json']);
 
         await userLogic.setUser(accountDeployment, 'admin', { privateKey: privateKeyDeployment });
 
@@ -75,36 +81,43 @@ describe('AssetConsumingLogic', () => {
         const deployedContracts = await migrateAssetRegistryContracts(web3, userContractLookupAddr, privateKeyDeployment);
 
         userContractLookup = new UserContractLookup((web3 as any),
-                                                    userContractLookupAddr);
+            userContractLookupAddr);
 
         Object.keys(deployedContracts).forEach(async (key) => {
 
+            let tempBytecode;
             if (key.includes('AssetContractLookup')) {
                 assetContractLookup = new AssetContractLookup((web3 as any), deployedContracts[key]);
+                tempBytecode = '0x' + (AssetContractLookupJSON as any).deployedBytecode;
             }
 
             if (key.includes('AssetConsumingDB')) {
                 assetConsumingDB = new AssetConsumingDB((web3 as any), deployedContracts[key]);
+                tempBytecode = '0x' + (AssetConsumingDBJSON as any).deployedBytecode;
+
             }
 
             if (key.includes('AssetConsumingRegistryLogic')) {
                 assetConsumingLogic = new AssetConsumingRegistryLogic((web3 as any), deployedContracts[key]);
+                tempBytecode = '0x' + (AssetConsumingRegistryLogicJSON as any).deployedBytecode;
+
             }
 
             if (key.includes('AssetProducingDB')) {
                 assetProducingDB = new AssetProducingDB((web3 as any), deployedContracts[key]);
+                tempBytecode = '0x' + (AssetProducingDBJSON as any).deployedBytecode;
             }
 
             if (key.includes('AssetProducingRegistryLogic')) {
                 assetProducingLogic = new AssetProducingRegistryLogic((web3 as any), deployedContracts[key]);
+                tempBytecode = '0x' + (AssetProducingRegistryLogicJSON as any).deployedBytecode;
+
             }
 
             const deployedBytecode = await web3.eth.getCode(deployedContracts[key]);
             assert.isTrue(deployedBytecode.length > 0);
 
-            const contractInfo = JSON.parse(fs.readFileSync(key, 'utf8'));
-
-            const tempBytecode = '0x' + contractInfo.deployedBytecode;
+            // const tempBytecode = '0x' + contractInfo.deployedBytecode;
             assert.equal(deployedBytecode, tempBytecode);
 
         });
@@ -177,8 +190,6 @@ describe('AssetConsumingLogic', () => {
 
     it('should onboard tests-users', async () => {
         const userLogicAddress = await userContractLookup.userRegistry();
-
-        userLogic = new UserLogic(web3, userLogicAddress);
 
         await userLogic.setUser(assetOwnerAddress, 'assetOwner', { privateKey: privateKeyDeployment });
         await userLogic.setRoles(assetOwnerAddress, 8, { privateKey: privateKeyDeployment });
@@ -468,7 +479,7 @@ describe('AssetConsumingLogic', () => {
 
         try {
             await assetConsumingLogic.setMarketLookupContract(0, '0x1000000000000000000000000000000000000005',
-                                                              { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
+                { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
         } catch (ex) {
             assert.include(ex.message, 'sender is not the assetOwner');
 
@@ -484,7 +495,7 @@ describe('AssetConsumingLogic', () => {
 
         try {
             await assetConsumingLogic.setMarketLookupContract(0, '0x1000000000000000000000000000000000000005',
-                                                              { privateKey: matcherPK });
+                { privateKey: matcherPK });
         } catch (ex) {
             assert.include(ex.message, 'sender is not the assetOwner');
 
@@ -500,7 +511,7 @@ describe('AssetConsumingLogic', () => {
 
         try {
             await assetConsumingLogic.setMarketLookupContract(0, '0x1000000000000000000000000000000000000005',
-                                                              { privateKey: privateKeyDeployment });
+                { privateKey: privateKeyDeployment });
         } catch (ex) {
             assert.include(ex.message, 'sender is not the assetOwner');
 
@@ -513,7 +524,7 @@ describe('AssetConsumingLogic', () => {
     it('should set marketAddress', async () => {
 
         await assetConsumingLogic.setMarketLookupContract(0, '0x1000000000000000000000000000000000000005',
-                                                          { privateKey: assetOwnerPK });
+            { privateKey: assetOwnerPK });
 
         assert.equal(await assetConsumingLogic.getMarketLookupContract(0), '0x1000000000000000000000000000000000000005');
 
