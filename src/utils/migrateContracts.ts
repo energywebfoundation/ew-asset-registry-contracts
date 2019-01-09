@@ -1,4 +1,5 @@
-import { Web3Type } from '../types/web3';
+import Web3 = require('web3');
+
 import { AssetContractLookup } from '../wrappedContracts/AssetContractLookup';
 import { deploy } from 'ew-deployment';
 import {
@@ -10,7 +11,7 @@ import {
 } from '..';
 
 export async function migrateAssetRegistryContracts(
-    web3: Web3Type,
+    web3: Web3,
     userContractLookup: string,
     deployKey: string,
 ): Promise<JSON> {
