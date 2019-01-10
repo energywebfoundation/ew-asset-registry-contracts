@@ -17,7 +17,7 @@
 import { assert } from 'chai';
 import * as fs from 'fs';
 import 'mocha';
-import { Web3Type } from '../types/web3';
+import Web3 = require('web3');
 import { UserContractLookup, UserLogic, migrateUserRegistryContracts } from 'ew-user-registry-contracts';
 import { migrateAssetRegistryContracts } from '../utils/migrateContracts';
 import { AssetContractLookup } from '../wrappedContracts/AssetContractLookup';
@@ -25,15 +25,19 @@ import { AssetProducingRegistryLogic } from '../wrappedContracts/AssetProducingR
 import { AssetConsumingRegistryLogic } from '../wrappedContracts/AssetConsumingRegistryLogic';
 import { AssetConsumingDB } from '../wrappedContracts/AssetConsumingDB';
 import { AssetProducingDB } from '../wrappedContracts/AssetProducingDB';
-import { isRegExp } from 'util';
-import { getClientVersion } from 'sloffle';
+import {
+    AssetContractLookupJSON,
+    AssetConsumingDBJSON,
+    AssetConsumingRegistryLogicJSON,
+    AssetProducingDBJSON,
+    AssetProducingRegistryLogicJSON,
+} from '..';
 
 describe('AssetConsumingLogic', () => {
 
     const configFile = JSON.parse(fs.readFileSync(process.cwd() + '/connection-config.json', 'utf8'));
 
-    const Web3 = require('web3');
-    const web3: Web3Type = new Web3(configFile.develop.web3);
+    const web3: Web3 = new Web3(configFile.develop.web3);
 
     const privateKeyDeployment = configFile.develop.deployKey.startsWith('0x') ?
         configFile.develop.deployKey : '0x' + configFile.develop.deployKey;
@@ -60,43 +64,63 @@ describe('AssetConsumingLogic', () => {
     const assetSmartmeter2PK = '0x554f3c1470e9f66ed2cf1dc260d2f4de77a816af2883679b1dc68c551e8fa5ed';
     const assetSmartMeter2 = web3.eth.accounts.privateKeyToAccount(assetSmartmeter2PK).address;
 
-    let isGanache: boolean;
-
     it('should deploy the contracts', async () => {
 
-        isGanache = (await getClientVersion(web3)).includes('EthereumJS');
+        const userContracts = await migrateUserRegistryContracts(web3, privateKeyDeployment);
 
-        const userContracts = await migrateUserRegistryContracts(web3);
-
-        const userLogic: UserLogic = new UserLogic((web3 as any), userContracts[process.cwd() + '/node_modules/ew-user-registry-contracts/dist/contracts/UserLogic.json']);
+        userLogic = new UserLogic((web3 as any),
+                                  (userContracts as any).UserLogic);
 
         await userLogic.setUser(accountDeployment, 'admin', { privateKey: privateKeyDeployment });
 
         await userLogic.setRoles(accountDeployment, 3, { privateKey: privateKeyDeployment });
 
-        const userContractLookupAddr = userContracts[process.cwd() + '/node_modules/ew-user-registry-contracts/dist/contracts/UserContractLookup.json'];
+        const userContractLookupAddr = (userContracts as any).UserContractLookup;
 
-        const deployedContracts = await migrateAssetRegistryContracts(web3, userContractLookupAddr);
+        const deployedContracts = await migrateAssetRegistryContracts(web3, userContractLookupAddr, privateKeyDeployment);
 
         userContractLookup = new UserContractLookup((web3 as any),
                                                     userContractLookupAddr);
-        assetContractLookup = new AssetContractLookup((web3 as any));
-        assetProducingLogic = new AssetProducingRegistryLogic((web3 as any));
-        assetConsumingLogic = new AssetConsumingRegistryLogic((web3 as any));
-        assetProducingDB = new AssetProducingDB((web3 as any));
-        assetConsumingDB = new AssetConsumingDB((web3 as any));
 
         Object.keys(deployedContracts).forEach(async (key) => {
+
+            let tempBytecode;
+            if (key.includes('AssetContractLookup')) {
+                assetContractLookup = new AssetContractLookup((web3 as any), deployedContracts[key]);
+                tempBytecode = '0x' + (AssetContractLookupJSON as any).deployedBytecode;
+            }
+
+            if (key.includes('AssetConsumingDB')) {
+                assetConsumingDB = new AssetConsumingDB((web3 as any), deployedContracts[key]);
+                tempBytecode = '0x' + (AssetConsumingDBJSON as any).deployedBytecode;
+
+            }
+
+            if (key.includes('AssetConsumingRegistryLogic')) {
+                assetConsumingLogic = new AssetConsumingRegistryLogic((web3 as any), deployedContracts[key]);
+                tempBytecode = '0x' + (AssetConsumingRegistryLogicJSON as any).deployedBytecode;
+
+            }
+
+            if (key.includes('AssetProducingDB')) {
+                assetProducingDB = new AssetProducingDB((web3 as any), deployedContracts[key]);
+                tempBytecode = '0x' + (AssetProducingDBJSON as any).deployedBytecode;
+            }
+
+            if (key.includes('AssetProducingRegistryLogic')) {
+                assetProducingLogic = new AssetProducingRegistryLogic((web3 as any), deployedContracts[key]);
+                tempBytecode = '0x' + (AssetProducingRegistryLogicJSON as any).deployedBytecode;
+
+            }
 
             const deployedBytecode = await web3.eth.getCode(deployedContracts[key]);
             assert.isTrue(deployedBytecode.length > 0);
 
-            const contractInfo = JSON.parse(fs.readFileSync(key, 'utf8'));
-
-            const tempBytecode = '0x' + contractInfo.deployedBytecode;
+            // const tempBytecode = '0x' + contractInfo.deployedBytecode;
             assert.equal(deployedBytecode, tempBytecode);
 
         });
+
     });
 
     it('should have the right owner', async () => {
@@ -166,8 +190,6 @@ describe('AssetConsumingLogic', () => {
 
     it('should onboard tests-users', async () => {
         const userLogicAddress = await userContractLookup.userRegistry();
-
-        userLogic = new UserLogic(web3, userLogicAddress);
 
         await userLogic.setUser(assetOwnerAddress, 'assetOwner', { privateKey: privateKeyDeployment });
         await userLogic.setRoles(assetOwnerAddress, 8, { privateKey: privateKeyDeployment });
