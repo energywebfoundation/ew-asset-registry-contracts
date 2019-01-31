@@ -38,13 +38,17 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
         uint _newMeterRead
     );
 
-    UserContractLookupInterface public userContractLookup;
     
     /// @notice Constructor
     /// @param _userContractLookup usercontract-lookup-contract
     /// @param _assetContractLookup the asset-lookup-contract
-    constructor(UserContractLookupInterface _userContractLookup, AssetContractLookupInterface _assetContractLookup) RoleManagement(_userContractLookup, address(_assetContractLookup)) public {
-        userContractLookup = _userContractLookup;
+    constructor(
+        UserContractLookupInterface _userContractLookup, 
+        AssetContractLookupInterface _assetContractLookup
+    ) 
+        RoleManagement(_userContractLookup, address(_assetContractLookup)) 
+        public 
+    {
     }
 
 	/// @notice Logs meter read

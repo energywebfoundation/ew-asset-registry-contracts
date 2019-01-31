@@ -29,9 +29,6 @@ contract AssetConsumingRegistryLogic is AssetLogic, AssetConsumingInterface {
 
     event LogNewMeterRead(uint indexed _assetId, uint _oldMeterRead, uint _newMeterRead);
 
-    /// @param the userContract-lookup contract (used for RoleManagement)
-    UserContractLookupInterface public userContractLookup;
-
     /// @notice Constructor
     /// @param _userContractLookup userContract-lookup contract
     /// @param _assetContractLookup assetContract-lookup contracts (that should own this contract)
@@ -40,10 +37,9 @@ contract AssetConsumingRegistryLogic is AssetLogic, AssetConsumingInterface {
         AssetContractLookupInterface _assetContractLookup
     ) 
         RoleManagement(_userContractLookup,address (_assetContractLookup)) 
-        public 
-    {
-        userContractLookup = _userContractLookup;
-    }
+        public {
+
+        }
 
     /**
         external functions
