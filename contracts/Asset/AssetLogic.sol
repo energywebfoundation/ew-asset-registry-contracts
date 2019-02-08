@@ -1,6 +1,6 @@
 // Copyright 2018 Energy Web Foundation
 // This file is part of the Origin Application brought to you by the Energy Web Foundation,
-// a global non-profit organization focused on accelerating blockchain technology across the energy sector, 
+// a global non-profit organization focused on accelerating blockchain technology across the energy sector,
 // incorporated in Zug, Switzerland.
 //
 // The Origin Application is free software: you can redistribute it and/or modify
@@ -12,7 +12,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details, at <http://www.gnu.org/licenses/>.
 //
-// @authors: slock.it GmbH, Martin Kuechler, martin.kuchler@slock.it
+// @authors: slock.it GmbH; Martin Kuechler, martin.kuchler@slock.it; Heiko Burkhardt, heiko.burkhardt@slock.it
 
 pragma solidity ^0.5.0;
 
@@ -31,15 +31,15 @@ contract AssetLogic is RoleManagement, Updatable, AssetGeneralInterface, AssetGe
     event LogAssetSetActive(uint indexed _assetId);
     event LogAssetSetInactive(uint indexed _assetId);
     event LogNewMeterRead(
-        uint indexed _assetId, 
-        uint _oldMeterRead, 
+        uint indexed _assetId,
+        uint _oldMeterRead,
         uint _newMeterRead
     );
 
     /**
         abtract functions
      */
-     
+
 	/// @notice checks whether an asset with the provided smartmeter aready exists
 	/// @param _smartMeter provided smartmeter
 	/// @return whether there is already an asset with that smartmeter
@@ -58,7 +58,7 @@ contract AssetLogic is RoleManagement, Updatable, AssetGeneralInterface, AssetGe
     */
 	/// @notice function toinizialize the database, can only be called once
 	/// @param _dbAddress address of the database contract
-    function init(address _dbAddress, address ) 
+    function init(address _dbAddress, address )
         external
         onlyOwner
     {
@@ -74,20 +74,20 @@ contract AssetLogic is RoleManagement, Updatable, AssetGeneralInterface, AssetGe
         isInitialized
         onlyRole(RoleManagement.Role.AssetAdmin)
     {
-       
+
         db.setActive(_assetId, _active);
         if (_active) {
             emit LogAssetSetActive(_assetId);
         } else {
             emit LogAssetSetInactive(_assetId);
-        } 
+        }
     }
 
 	/// @notice Set the MarketLookup contract contract
 	/// @param _assetId the id belonging ti an entry in the asset registry
 	/// @param _marketContractLookup the MarketLookup-contract
     function setMarketLookupContract(uint _assetId, address _marketContractLookup)
-        external   
+        external
     {
         require(msg.sender == db.getAssetOwner(_assetId),"sender is not the assetOwner");
         db.setMarketLookupContract(_assetId, _marketContractLookup);
@@ -95,7 +95,7 @@ contract AssetLogic is RoleManagement, Updatable, AssetGeneralInterface, AssetGe
 
 	/// @notice Updates the logic contract
 	/// @param _newLogic address of the new logic contract
-    function update(address _newLogic) 
+    function update(address _newLogic)
         external
         onlyOwner
     {
@@ -107,7 +107,7 @@ contract AssetLogic is RoleManagement, Updatable, AssetGeneralInterface, AssetGe
 	/// @return the amount of all assets
     function getAssetListLength()
         external
-        view 
+        view
         returns (uint)
     {
        return db.getAssetListLength();
@@ -117,7 +117,7 @@ contract AssetLogic is RoleManagement, Updatable, AssetGeneralInterface, AssetGe
 	/// @param _assetId the id of an asset
 	/// @return contract address of the MarketLookup-contract
     function getMarketLookupContract(uint _assetId)
-        external   
+        external
         view
         returns (address)
     {
@@ -139,28 +139,28 @@ contract AssetLogic is RoleManagement, Updatable, AssetGeneralInterface, AssetGe
 	/// @param _assetId the id of an asset
 	/// @param _new matcher-address to be included
     function addMatcher(uint _assetId, address _new) external {
-        
-        require(msg.sender == db.getAssetOwner(_assetId),"addMatcher: not the owner");    
+
+        require(msg.sender == db.getAssetOwner(_assetId),"addMatcher: not the owner");
         address[] memory matcher = db.getMatcher(_assetId);
         require(matcher.length+1 <= AssetContractLookup(owner).maxMatcherPerAsset(),"addMatcher: too many matcher already");
-            
-        db.addMatcher(_assetId,_new);    
+
+        db.addMatcher(_assetId,_new);
     }
 
-	/// @notice removes a matcher address from the array of an asset 
+	/// @notice removes a matcher address from the array of an asset
 	/// @param _assetId the id of an asset
 	/// @param _remove matcher address to be removed
     function removeMatcher(uint _assetId, address _remove) external  {
         require(msg.sender == db.getAssetOwner(_assetId),"removeMatcher: not the owner");
         require(db.removeMatcherExternal(_assetId,_remove),"removeMatcher: address not found");
-    
+
     }
 	/// @notice checks whether an AssetGeneral-struct already exists
 	/// @param _assetGeneral the AssetGeneral-struct
 	/// @return whether that struct exists
     function checkAssetGeneralExistingStatus(AssetGeneralStructContract.AssetGeneral memory _assetGeneral) internal pure returns (bool) {
         return !(
-            address(_assetGeneral.smartMeter) == address(0x0) 
+            address(_assetGeneral.smartMeter) == address(0x0)
             && address(_assetGeneral.owner) == address(0x0)
             && _assetGeneral.lastSmartMeterReadWh == 0
             && !_assetGeneral.active
@@ -173,12 +173,12 @@ contract AssetLogic is RoleManagement, Updatable, AssetGeneralInterface, AssetGe
     }
 
 	/// @notice sets a new meterreading for an asset
-	/// @param _assetId the id of an asset 
+	/// @param _assetId the id of an asset
 	/// @param _newMeterRead the new meterreading in Wh
 	/// @param _smartMeterReadFileHash the filehash for the meterreading
     function setSmartMeterReadInternal(
-        uint _assetId, 
-        uint _newMeterRead, 
+        uint _assetId,
+        uint _newMeterRead,
         string memory _smartMeterReadFileHash
     ) internal returns (uint){
 
@@ -186,16 +186,16 @@ contract AssetLogic is RoleManagement, Updatable, AssetGeneralInterface, AssetGe
         require(asset.smartMeter == msg.sender,"saveSmartMeterRead: wrong sender");
         require(asset.active,"saveSmartMeterRead: asset not active");
 
-        uint oldMeterRead = asset.lastSmartMeterReadWh; 
+        uint oldMeterRead = asset.lastSmartMeterReadWh;
 
         require(_newMeterRead > oldMeterRead,"saveSmartMeterRead: meterread too low");
         /// @dev need to check if new meter read is higher then the old one
 
         db.setSmartMeterRead(_assetId, _newMeterRead, _smartMeterReadFileHash);
-     
+
         emit LogNewMeterRead(
-            _assetId, 
-            oldMeterRead, 
+            _assetId,
+            oldMeterRead,
             _newMeterRead
         );
 
@@ -253,8 +253,8 @@ contract AssetLogic is RoleManagement, Updatable, AssetGeneralInterface, AssetGe
 	/// @param _smartMeter the smartmeter used by that asset
     function checkBeforeCreation(address[] memory _matcher, address _owner, address _smartMeter) internal view {
         require(_matcher.length <= AssetContractLookup(owner).maxMatcherPerAsset(),"addMatcher: too many matcher already");
-        require(isRole(RoleManagement.Role.AssetManager, _owner),"user does not have the required role"); 
-        require(isRole(RoleManagement.Role.AssetAdmin, msg.sender),"user does not have the required role"); 
+        require(isRole(RoleManagement.Role.AssetManager, _owner),"user does not have the required role");
+        require(isRole(RoleManagement.Role.AssetAdmin, msg.sender),"user does not have the required role");
         require(!checkAssetExist(_smartMeter),"smartmeter does already exist");
     }
 

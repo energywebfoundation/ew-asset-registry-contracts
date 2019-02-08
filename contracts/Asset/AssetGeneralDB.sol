@@ -1,6 +1,6 @@
 // Copyright 2018 Energy Web Foundation
 // This file is part of the Origin Application brought to you by the Energy Web Foundation,
-// a global non-profit organization focused on accelerating blockchain technology across the energy sector, 
+// a global non-profit organization focused on accelerating blockchain technology across the energy sector,
 // incorporated in Zug, Switzerland.
 //
 // The Origin Application is free software: you can redistribute it and/or modify
@@ -12,7 +12,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details, at <http://www.gnu.org/licenses/>.
 //
-// @authors: Martin Kuechler, martin.kuechler@slock.it
+// @authors: slock.it GmbH; Martin Kuechler, martin.kuchler@slock.it; Heiko Burkhardt, heiko.burkhardt@slock.it
 
 pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
@@ -39,7 +39,7 @@ contract AssetGeneralDB is Owned, AssetGeneralStructContract, AssetDbInterface {
     /// @param _assetId the assetId of the AssetGeneral-struct to be returned
     /// @return returns a storage pointer to a AssetGeneral struct
     function getAssetGeneralInternal(uint _assetId) internal view returns (AssetGeneral storage general);
-    
+
     /// @notice gets the amount of onboarded assets
     /// @dev this function has to be implemetned in order to create a deployable bytecode
     /// @return retuns the amount of onboarded assets
@@ -48,7 +48,7 @@ contract AssetGeneralDB is Owned, AssetGeneralStructContract, AssetDbInterface {
     /**
         external functions
     */
-    
+
     /// @notice adds a new matcher to an asset
     /// @param _assetId the id of an asset
     /// @param _matcher the address of the matcher to be added
@@ -70,7 +70,7 @@ contract AssetGeneralDB is Owned, AssetGeneralStructContract, AssetDbInterface {
         getAssetGeneralInternal(_assetId).owner = _owner;
     }
 
-    
+
     /// @notice set the flag whether an asset is bundled to energy
     /// @param _assetId the id of an asset
     /// @param _bundled the bundle flag
@@ -78,9 +78,9 @@ contract AssetGeneralDB is Owned, AssetGeneralStructContract, AssetDbInterface {
         getAssetGeneralInternal(_assetId).bundled = _bundled;
     }
 
-    /// @notice set the Last SmartMeterRead File-Hash 
+    /// @notice set the Last SmartMeterRead File-Hash
     /// @param _assetId the id of an asset
-    /// @param _lastSmartMeterReadFileHash the hash of the last meterreading 
+    /// @param _lastSmartMeterReadFileHash the hash of the last meterreading
     function setLastSmartMeterReadFileHash(uint _assetId, string calldata _lastSmartMeterReadFileHash) external onlyOwner {
         getAssetGeneralInternal(_assetId).lastSmartMeterReadFileHash = _lastSmartMeterReadFileHash;
     }
@@ -105,8 +105,8 @@ contract AssetGeneralDB is Owned, AssetGeneralStructContract, AssetDbInterface {
     /// @param _lastSmartMeterReadWh the meterreading
     /// @param _lastSmartMeterReadFileHash the filehash
     function setSmartMeterRead(
-        uint _assetId, 
-        uint _lastSmartMeterReadWh, 
+        uint _assetId,
+        uint _lastSmartMeterReadWh,
         string calldata _lastSmartMeterReadFileHash
     )
         external
@@ -124,7 +124,7 @@ contract AssetGeneralDB is Owned, AssetGeneralStructContract, AssetDbInterface {
         return getAssetGeneralInternal(_assetId).active;
     }
 
-    /// @notice gets the AssetGeneral-struct as memory 
+    /// @notice gets the AssetGeneral-struct as memory
     /// @param _assetId the id of an asset
     /// @return the AssetGeneral-struct as memory
     function getAssetGeneral(uint _assetId) external onlyOwner view returns (AssetGeneral memory general){
@@ -159,7 +159,7 @@ contract AssetGeneralDB is Owned, AssetGeneralStructContract, AssetDbInterface {
         return getAssetGeneralInternal(_assetId).owner;
     }
 
-    /// @notice gets the last meterreading and its filehash 
+    /// @notice gets the last meterreading and its filehash
     /// @dev this function can be used to save gas-costs when calling it
     /// @param _assetId the id of an asset
     /// @return last meterreading and its filehash
@@ -169,21 +169,21 @@ contract AssetGeneralDB is Owned, AssetGeneralStructContract, AssetDbInterface {
         _lastSmartMeterReadFileHash = general.lastSmartMeterReadFileHash;
     }
 
-    /// @notice gets the market-lookup-contract 
+    /// @notice gets the market-lookup-contract
     /// @param _assetId the id of an asset
     /// @return the market-lookup-contractaddress
-    function getMarketLookupContract(uint _assetId) external onlyOwner view returns (address){ 
+    function getMarketLookupContract(uint _assetId) external onlyOwner view returns (address){
         return getAssetGeneralInternal(_assetId).marketLookupContract;
     }
 
-    /// @notice gets the matcher-array 
+    /// @notice gets the matcher-array
     /// @param _assetId the id of an asset
     /// @return array with matcher-addresses
     function getMatcher(uint _assetId) external onlyOwner view returns (address[] memory) {
         return getAssetGeneralInternal(_assetId).matcher;
     }
 
-    /// @notice gets the smartmeter of an asset 
+    /// @notice gets the smartmeter of an asset
     /// @param _assetId the id of an asset
     /// @return eth-address of the smartmeter
     function getSmartMeter(uint _assetId) external onlyOwner view returns (address){
@@ -193,13 +193,13 @@ contract AssetGeneralDB is Owned, AssetGeneralStructContract, AssetDbInterface {
     /**
         public functions
     */
-    
+
     /// @notice Set the matcher-array
     /// @param _assetId the id of an asset
     /// @param _matcher array with matcher-addresses
     function setMatcher(uint _assetId, address[] memory _matcher) public onlyOwner {
         getAssetGeneralInternal(_assetId).matcher = _matcher;
-    } 
+    }
 
     function setMatcherExternal(uint _assetId, address[] calldata _matcher) external onlyOwner {
         setMatcher(_assetId, _matcher);
@@ -209,12 +209,12 @@ contract AssetGeneralDB is Owned, AssetGeneralStructContract, AssetDbInterface {
         return removeMatcher(_assetId, _removal);
     }
 
-    /// @notice removes an matcher-address from the matcher-array of an asset 
+    /// @notice removes an matcher-address from the matcher-array of an asset
     /// @param _assetId the id of an asset
     /// @param _removal the address to be removed
     /// @return flag whether the to be removed address was found in the array
     function removeMatcher(uint _assetId, address _removal) public onlyOwner returns (bool) {
-        
+
         address[] storage matchers = getAssetGeneralInternal(_assetId).matcher;
         for (uint i = 0; i < matchers.length; i++)
         {
@@ -229,5 +229,5 @@ contract AssetGeneralDB is Owned, AssetGeneralStructContract, AssetDbInterface {
 
 
 
-  
+
 }

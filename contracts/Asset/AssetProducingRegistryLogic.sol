@@ -1,6 +1,6 @@
 // Copyright 2018 Energy Web Foundation
 // This file is part of the Origin Application brought to you by the Energy Web Foundation,
-// a global non-profit organization focused on accelerating blockchain technology across the energy sector, 
+// a global non-profit organization focused on accelerating blockchain technology across the energy sector,
 // incorporated in Zug, Switzerland.
 //
 // The Origin Application is free software: you can redistribute it and/or modify
@@ -12,7 +12,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details, at <http://www.gnu.org/licenses/>.
 //
-// @authors: slock.it GmbH, Martin Kuechler, martin.kuechler@slock.it
+// @authors: slock.it GmbH; Martin Kuechler, martin.kuchler@slock.it; Heiko Burkhardt, heiko.burkhardt@slock.it
 
 pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
@@ -33,13 +33,13 @@ import "../../contracts/Interfaces/AssetProducingInterface.sol";
 contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
 
     event LogNewMeterRead(
-        uint indexed _assetId, 
-        uint _oldMeterRead, 
+        uint indexed _assetId,
+        uint _oldMeterRead,
         uint _newMeterRead
     );
 
     UserContractLookupInterface public userContractLookup;
-    
+
     /// @notice Constructor
     /// @param _userContractLookup usercontract-lookup-contract
     /// @param _assetContractLookup the asset-lookup-contract
@@ -52,10 +52,10 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
 	/// @param _newMeterRead The current meter read of the asset
 	/// @param _lastSmartMeterReadFileHash Last meter read file hash
     function saveSmartMeterRead(
-        uint _assetId, 
-        uint _newMeterRead, 
+        uint _assetId,
+        uint _newMeterRead,
         string calldata _lastSmartMeterReadFileHash
-    ) 
+    )
         external
         isInitialized
     {
@@ -63,16 +63,16 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
 
         AssetProducingDB.Asset memory asset = AssetProducingDB(address(db)).getAssetById(_assetId);
 
-        uint oldMeterRead = asset.assetGeneral.lastSmartMeterReadWh; 
+        uint oldMeterRead = asset.assetGeneral.lastSmartMeterReadWh;
         if(address(asset.assetGeneral.marketLookupContract) != address(0x0)){
                 TradableEntityCreationInterface(OriginMarketContractLookupInterface(asset.assetGeneral.marketLookupContract).originLogicRegistry()).createTradableEntity(
-                    _assetId, 
+                    _assetId,
                     createdPower
-                ); 
-            
+                );
+
         }
     }
-    
+
 	/// @notice creates an asset with the provided parameters
 	/// @param _smartMeter smartmeter of the asset
 	/// @param _owner asset-owner
@@ -82,7 +82,7 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
 	/// @param _url where to find the documentHash
 	/// @param _numOwnerChanges allowed amount of owner-changes of certificates created by the asset
 	/// @return generated asset-id
-	function createAsset(  
+	function createAsset(
         address _smartMeter,
         address _owner,
         bool _active,
@@ -90,8 +90,8 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
         string calldata _propertiesDocumentHash,
         string calldata _url,
         uint _numOwnerChanges
-    ) 
-        external 
+    )
+        external
         returns (uint _assetId)
     {
         checkBeforeCreation(_matcher, _owner, _smartMeter);
@@ -118,29 +118,29 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
         _assetId =  AssetProducingDB(address(db)).addFullAsset(_asset);
 
         emit LogAssetCreated(msg.sender, _assetId);
-        
+
     }
 
 	/// @notice Gets an asset
 	/// @param _assetId The id belonging to an entry in the asset registry
 	/// @return Full informations of an asset
-    function getAssetById(uint _assetId) 
+    function getAssetById(uint _assetId)
         external
         view
         returns (
             AssetProducingDB.Asset memory
         )
-    {        
+    {
         return AssetProducingDB(address(db)).getAssetById(_assetId);
     }
 
 	/// @notice gets an asset by its smartmeter
 	/// @param _smartMeter smartmeter used for by the asset
 	/// @return Asset-Struct
-    function getAssetBySmartMeter(address _smartMeter) 
-        external 
-        view 
-        returns (  
+    function getAssetBySmartMeter(address _smartMeter)
+        external
+        view
+        returns (
             AssetProducingDB.Asset memory
         )
     {
@@ -163,8 +163,8 @@ contract AssetProducingRegistryLogic is AssetLogic, AssetProducingInterface {
 	/// @param _assetId the id of an asset
 	/// @param _active whether the asset should use bundle functions
     function setBundleActive(uint _assetId, bool _active) external {
-        
-        require(msg.sender == db.getAssetOwner(_assetId),"setBundleActive: not the owner");   
+
+        require(msg.sender == db.getAssetOwner(_assetId),"setBundleActive: not the owner");
         db.setIsBundled(_assetId, _active);
     }
 }
