@@ -1,7 +1,6 @@
 // Copyright 2018 Energy Web Foundation
-//
 // This file is part of the Origin Application brought to you by the Energy Web Foundation,
-// a global non-profit organization focused on accelerating blockchain technology across the energy sector, 
+// a global non-profit organization focused on accelerating blockchain technology across the energy sector,
 // incorporated in Zug, Switzerland.
 //
 // The Origin Application is free software: you can redistribute it and/or modify
@@ -13,7 +12,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details, at <http://www.gnu.org/licenses/>.
 //
-// @authors: slock.it GmbH, Martin Kuechler, martin.kuechler@slock.it
+// @authors: slock.it GmbH; Martin Kuechler, martin.kuchler@slock.it; Heiko Burkhardt, heiko.burkhardt@slock.it
 
 pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
@@ -47,9 +46,9 @@ contract AssetConsumingDB is AssetGeneralDB {
     function getAssetById(uint _assetId) external onlyOwner view returns (Asset memory) {
         return assetMapping[smartMeterAddresses[_assetId]];
     }
-        
+
     /// @notice function to get an asset by its smartmeter
-    /// @param _smartMeter the smartmeter of the asset 
+    /// @param _smartMeter the smartmeter of the asset
     /// @return the Asset-struct
     function getAssetBySmartMeter(address _smartMeter) external onlyOwner view returns (Asset memory) {
         return assetMapping[_smartMeter];
@@ -67,8 +66,8 @@ contract AssetConsumingDB is AssetGeneralDB {
 
     /// @notice function to add a new asset to the list of assets
     /// @dev it's using a public-modifier in order to avoid an UnimplementedFeatureError
-    /// @return the assetId beloning the asset 
-    function addFullAsset(Asset memory _a) 
+    /// @return the assetId beloning the asset
+    function addFullAsset(Asset memory _a)
         public
         onlyOwner
         returns (uint _assetId)
@@ -88,14 +87,14 @@ contract AssetConsumingDB is AssetGeneralDB {
     /// @dev implements abstract funciton of AssetGeneralDB
     /// @param _assetId the id of the asset
     /// @return the AssetGeneral-Struct as storage-pointer
-    function getAssetGeneralInternal(uint _assetId) 
-        internal 
-        view 
-        returns (AssetGeneral storage general) 
+    function getAssetGeneralInternal(uint _assetId)
+        internal
+        view
+        returns (AssetGeneral storage general)
     {
         address smAddress = smartMeterAddresses[_assetId];
         return assetMapping[smAddress].assetGeneral;
     }
 
-    
+
 }
