@@ -115,10 +115,10 @@ interface AssetDbInterface {
 
 	/// @notice sets a new meterreading and its filehash
 	/// @param _assetId the id of an asset
-	/// @param lastSmartMeterReadWh meterreading in Wh
+	/// @param _lastSmartMeterReadWh meterreading in Wh
 	/// @param _lastSmartMeterReadFileHash filehash of the meterreading
-	function setSmartMeterRead(uint _assetId, uint lastSmartMeterReadWh, string calldata _lastSmartMeterReadFileHash) external;
-
+	function setSmartMeterRead(uint _assetId, uint _lastSmartMeterReadWh, string calldata _lastSmartMeterReadFileHash) external;
+	
 	/// @notice gets the latest meterreading and its hash
 	/// @param _assetId id of an asset
 	/// @return meterreading and its hash
