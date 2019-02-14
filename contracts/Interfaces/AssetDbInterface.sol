@@ -1,6 +1,6 @@
 // Copyright 2018 Energy Web Foundation
 // This file is part of the Origin Application brought to you by the Energy Web Foundation,
-// a global non-profit organization focused on accelerating blockchain technology across the energy sector, 
+// a global non-profit organization focused on accelerating blockchain technology across the energy sector,
 // incorporated in Zug, Switzerland.
 //
 // The Origin Application is free software: you can redistribute it and/or modify
@@ -12,7 +12,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details, at <http://www.gnu.org/licenses/>.
 //
-// @authors: slock.it GmbH, Martin Kuechler, martin.kuchler@slock.it
+// @authors: slock.it GmbH; Martin Kuechler, martin.kuchler@slock.it; Heiko Burkhardt, heiko.burkhardt@slock.it
 
 pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
@@ -21,17 +21,17 @@ import "../../contracts/Asset/AssetGeneralStructContract.sol";
 
 /// @title this interface defines the functions that both consuming and producing assets are sharing
 interface AssetDbInterface {
-    
+
 	/// @notice gets the AssetGeneral struct of an asset
 	/// @param _assetId the id of asset
 	/// @return AssetGeneral struct
     function getAssetGeneral(uint _assetId) external view returns (AssetGeneralStructContract.AssetGeneral memory general);
-	
+
 	/// @notice sets the active flag of an asset
 	/// @param _assetId the id of an asset
 	/// @param _active active flag
     function setActive(uint _assetId, bool _active) external;
-	
+
 	/// @notice gets the active flag of an asset
 	/// @param _assetId the id of an asset
 	/// @return active flag
@@ -41,7 +41,7 @@ interface AssetDbInterface {
 	/// @param _assetId the id of an asset
 	/// @param _lastSmartMeterReadFileHash new filehash
     function setLastSmartMeterReadFileHash(uint _assetId, string calldata _lastSmartMeterReadFileHash) external;
-	
+
 	/// @notice gets the latest filehash
 	/// @param _assetId the id of an sset
 	/// @return filehash
@@ -51,7 +51,7 @@ interface AssetDbInterface {
 	/// @param _assetId the id of an asset
 	/// @param _lastSmartMeterReadWh the new meterreading
     function setLastSmartMeterReadWh(uint _assetId, uint _lastSmartMeterReadWh) external;
-	
+
 	/// @notice gets the current meterreading
 	/// @param _assetId the id of an asset
 	/// @return current meterreading
@@ -61,7 +61,7 @@ interface AssetDbInterface {
 	/// @param _assetId the id of an asset
 	/// @param _owner the asset-owner
     function setAssetOwner(uint _assetId, address _owner) external;
-	
+
 	/// @notice gets the asset owner
 	/// @param _assetId the id of an asset
 	/// @return the asset owner
@@ -76,7 +76,7 @@ interface AssetDbInterface {
 	/// @param _assetId the id of an asset
 	/// @return the bundled flag
     function getIsBundled(uint _assetId) external view returns (bool);
-	
+
 	/// @notice sets the bundled flag
 	/// @param _assetId the id of an asset
 	/// @param _bundled bundled flag
@@ -86,7 +86,7 @@ interface AssetDbInterface {
 	/// @param _assetId the id of an asset
 	/// @param _marketLookupContract new marketLookup contract
     function setMarketLookupContract(uint _assetId, address _marketLookupContract) external;
-	
+
 	/// @notice gets the marketLookup contract
 	/// @param _assetId the id of an asset
 	/// @return the marketcontract lookup
@@ -96,7 +96,7 @@ interface AssetDbInterface {
 	/// @param _assetId the id of an asset
 	/// @param _matcher matcher-address
     function addMatcher(uint _assetId, address _matcher) external;
-	
+
 	/// @notice gets the matcher array of an asset
 	/// @param _assetId the id of an asset
 	/// @return matcher-array
@@ -106,7 +106,7 @@ interface AssetDbInterface {
 	/// @param _assetId id of an asset
 	/// @param _matcher matcher-array
     function setMatcherExternal(uint _assetId, address[] calldata _matcher) external;
-	
+
 	/// @notice removes a matcher-address from the matcher-array of an asset
 	/// @param _assetId the id of an asset
 	/// @param _removal address to be removed
